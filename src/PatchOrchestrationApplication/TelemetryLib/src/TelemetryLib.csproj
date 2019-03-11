@@ -8,7 +8,7 @@
     <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib</RootNamespace>
     <AssemblyName>TelemetryLib</AssemblyName>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
   <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.2.0" />
