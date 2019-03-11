@@ -159,7 +159,7 @@ We encourage community feedback and contribution to improve this application. To
 
 ### Contribution Guidelines:
 Please create a branch and push your changes to that and then, create a pull request for that change.
-These is the check list that would be required to complete, for pushing your change to develop branch.
+These is the check list that would be required to complete, for pushing your change to master branch.
 
 1. Create Service Fabric cluster on Azure. You can find the steps for creating Service Fabric cluster on Azure [here](https://docs.microsoft.com/azure/service-fabric/service-fabric-cluster-creation-via-portal)
 2. Build the application with your change.
