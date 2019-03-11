@@ -1,8 +1,7 @@
-
 ---
 services: service-fabric
 platforms: .NET, windows
-author: raunakpandya,brkhande
+author: raunakpandya, brkhande
 ---
 
 # Service-Fabric-POA
