@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="PatchOrchestrationApplicationType" ApplicationTypeVersion="1.3.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="CoordinatorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="CoordinatorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="CoordinatorService_PlacementConstraints" DefaultValue="" />
+    <Parameter Name="NodeAgentService_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="NodeAgentService_PlacementConstraints" DefaultValue="" />
+
+    <!--Maximum number of Windows Update results history which should be cached
+        Default value of 3000 is assuming
+          Number of nodes are 20
+          Number of updates happening on a node per month is 5
+          Number of results per operation can be 10
+          And results for past 3 months should be stored
+    -->
+    <Parameter Name="MaxResultsToCache" DefaultValue="3000" />
+    <!--TaskApprovalPolicy indicates policy to be used by CoordinatorService to install windows updates across the SF cluster nodes
+    Allowed values are
+      NodeWise - Windows update will be installed one node at a time
+      UpgradeDomainWise - Windows update would be installed one upgrade domain at a time (at max
+      all the nodes belonging to an upgrade domain can go for windows update)
+    -->
+    <Parameter Name="TaskApprovalPolicy" DefaultValue="NodeWise" />
+    <!-- Maximum size of PatchOrchestrationApplication logs in MB, which can be persisted locally on node -->
+    <Parameter Name="LogsDiskQuotaInMB" DefaultValue="1024" />
+    <!-- Query to get windows updates, refer to criteria field at https://msdn.microsoft.com/en-us/library/windows/desktop/aa386526(v=vs.85).aspx for more details -->
+    <Parameter Name="WUQuery" DefaultValue="IsInstalled=0" />
+    <!-- This flag will only allow windows OS updates to be installed. -->
+    <Parameter Name="InstallWindowsOSOnlyUpdates" DefaultValue="False" />
+    <!-- Operation will throw a timeout exception if not able to complete execution in specified time -->
+    <Parameter Name="WUOperationTimeOutInMinutes" DefaultValue="90" />
+    <!--This configuration decides the maximum number of times the service would reschedule the Windows Update in case operation fails persistently -->
+    <Parameter Name="WURescheduleCount" DefaultValue="5" />
+    <!--This configuration decides the interval at which service would reschedule the Windows Update in case failure persists -->
+    <Parameter Name="WURescheduleTimeInMinutes" DefaultValue="30" />
+    <!--The frequency for installing Windows Update. The format and Possible Values are as below
+        1. Monthly,DD,HH:MM:SS -> Eg: Monthly,5,12:22:32 (day of month should be between 1-28)
+        2. Weekly,DAY,HH:MM:SS -> Weekly,Tuesday,12:22:32
+        3. Daily,HH:MM:SS -> Daily,12:22:32
+        5. None -> Indicates that Windows Update shouldn't be done
+        NOTE : All the time are in UTC
+        Default is every wednesday @ 7am to cover patch tuesdays.
+    -->
+    <Parameter Name="WUFrequency" DefaultValue="Weekly,Wednesday,7:00:00" />
+    <!-- This flag enables the NodeAgentService to accept EULA for windows update on behalf of user -->
+    <Parameter Name="AcceptWindowsUpdateEula" DefaultValue="true" />
+  </Parameters>
+  <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
+       should match the Name and Version attributes of the ServiceManifest element defined in the 
+       ServiceManifest.xml file. -->
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="CoordinatorServicePkg" ServiceManifestVersion="1.3.2" />
+    <ConfigOverrides>
+      <ConfigOverride Name="Config">
+        <Settings>
+          <Section Name="CoordinatorService">
+            <Parameter Name="MaxResultsToCache" Value="[MaxResultsToCache]" />
+            <Parameter Name="TaskApprovalPolicy" Value="[TaskApprovalPolicy]" />
+          </Section>
+        </Settings>
+      </ConfigOverride>
+    </ConfigOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="NodeAgentServicePkg" ServiceManifestVersion="1.3.2" />
+      <ConfigOverrides>
+        <ConfigOverride Name="Config">
+          <Settings>
+            <Section Name="NodeAgentService">
+              <Parameter Name="LogsDiskQuotaInMB" Value="[LogsDiskQuotaInMB]" />
+            </Section>
+            <Section Name="NTServiceSettings">
+              <Parameter Name="WUQuery" Value="[WUQuery]" />
+              <Parameter Name="InstallWindowsOSOnlyUpdates" Value="[InstallWindowsOSOnlyUpdates]" />
+              <Parameter Name="WUOperationTimeOutInMinutes" Value="[WUOperationTimeOutInMinutes]" />
+              <Parameter Name="WURescheduleCount" Value="[WURescheduleCount]" />
+              <Parameter Name="WURescheduleTimeInMinutes" Value="[WURescheduleTimeInMinutes]" />
+              <Parameter Name="WUFrequency" Value="[WUFrequency]" />
+              <Parameter Name="AcceptWindowsUpdateEula" Value="[AcceptWindowsUpdateEula]" />
+            </Section>
+          </Settings>
+        </ConfigOverride>
+      </ConfigOverrides>
+    <Policies>
+        <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
+    </Policies>
+  </ServiceManifestImport>
+  <DefaultServices>
+    <!-- The section below creates instances of service types, when an instance of this
+         application type is created. You can also create one or more instances of service type using the
+         ServiceFabric PowerShell module.
+
+         The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. -->
+    <Service Name="CoordinatorService">
+      <StatefulService ServiceTypeName="CoordinatorServiceType" TargetReplicaSetSize="[CoordinatorService_TargetReplicaSetSize]" MinReplicaSetSize="[CoordinatorService_MinReplicaSetSize]">
+        <SingletonPartition />
+        <PlacementConstraints>[CoordinatorService_PlacementConstraints]</PlacementConstraints>
+      </StatefulService>
+    </Service>
+    <Service Name="NodeAgentService">
+      <StatelessService ServiceTypeName="NodeAgentServiceType" InstanceCount="[NodeAgentService_InstanceCount]">
+        <SingletonPartition />
+        <PlacementConstraints>[NodeAgentService_PlacementConstraints]</PlacementConstraints>
+      </StatelessService>
+    </Service>
+  </DefaultServices>
+   <Principals>
+      <Users>
+         <User Name="SetupAdminUser">
+            <MemberOf>
+               <SystemGroup Name="Administrators" />
+            </MemberOf>
+         </User>
+      </Users>
+   </Principals>
+</ApplicationManifest>

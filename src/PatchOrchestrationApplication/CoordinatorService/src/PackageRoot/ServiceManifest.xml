@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceManifest Name="CoordinatorServicePkg"
+                 Version="1.3.2"
+                 xmlns="http://schemas.microsoft.com/2011/01/fabric"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ServiceTypes>
+    <!-- This is the name of your ServiceType. 
+         This name must match the string used in RegisterServiceType call in Program.cs. -->
+    <StatefulServiceType ServiceTypeName="CoordinatorServiceType" HasPersistedState="true" />
+  </ServiceTypes>
+
+  <!-- Code package is your service executable. -->
+  <CodePackage Name="Code" Version="1.3.2">
+    <EntryPoint>
+      <ExeHost>
+        <Program>CoordinatorService.exe</Program>
+      </ExeHost>
+    </EntryPoint>
+  </CodePackage>
+
+  <!-- Config package is the contents of the Config directoy under PackageRoot that contains an 
+       independently-updateable and versioned set of custom configuration settings for your service. -->
+  <ConfigPackage Name="Config" Version="1.1.0" />
+
+  <Resources>
+    <Endpoints>
+      <!-- This endpoint is used by the communication listener.-->
+      <Endpoint Name="ServiceEndpoint" />
+      <!-- Below endpoint would be used for RESTful API's from Coordinator service-->
+      <Endpoint Name="RESTEndpoint" Type="Input" Protocol="http"/>
+      <!-- This endpoint is used by the replicator for replicating the state of your service.
+           This endpoint is configured through a ReplicatorSettings config section in the Settings.xml
+           file under the ConfigPackage. -->
+      <Endpoint Name="ReplicatorEndpoint" />
+    </Endpoints>
+  </Resources>
+</ServiceManifest>

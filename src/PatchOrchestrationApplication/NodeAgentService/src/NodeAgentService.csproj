@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{215BF228-73E7-440D-BED6-63F2A4CD4094}</ProjectGuid>
+    <SrcRoot>..\..\..\..\src</SrcRoot>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService</RootNamespace>
+    <AssemblyName>NodeAgentService</AssemblyName>
+  </PropertyGroup>
+  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
+  <PropertyGroup>
+    <IsServiceFabricServiceProject>True</IsServiceFabricServiceProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "2.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric" Version = "5.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "2.4.145"/>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HealthManagerHelper.cs" />
+    <Compile Include="MonitorWindowsService.cs" />
+    <Compile Include="NodeAgentService.cs" />
+    <Compile Include="NtServiceConfigurationUtility.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="ServiceEventSource.cs" />
+    <Compile Include="DirectoryUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logmansessions.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="PackageRoot\Config\Settings.xml" />
+    <None Include="PackageRoot\ServiceManifest.xml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="App.config" />
+    <None Include="InstallAndRunService.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="SetupEntryPoint.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NodeAgentNTService\src\NodeAgentNTService.csproj">
+      <Project>{d8beed99-bbb5-4dcc-a28e-eec023849335}</Project>
+      <Name>NodeAgentNTService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NodeAgentSFUtility\src\NodeAgentSFUtility.csproj">
+      <Project>{5c4944f8-ac08-43c8-886c-ac11ddbf7e2f}</Project>
+      <Name>NodeAgentSFUtility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

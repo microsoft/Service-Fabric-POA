@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{100098F7-F31F-4F14-B474-D723B2ED9F34}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService</RootNamespace>
+    <SrcRoot>..\..\..\..\src</SrcRoot>
+    <AssemblyName>CoordinatorService</AssemblyName>
+  </PropertyGroup>
+  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
+  <PropertyGroup>
+    <IsServiceFabricServiceProject>true</IsServiceFabricServiceProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "2.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric" Version = "5.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "2.4.145"/>
+    <PackageReference Include="Newtonsoft.Json" Version = "6.0.4"/>
+    <PackageReference Include="Microsoft.Owin" Version = "2.0.2" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <PackageReference Include="Microsoft.Owin.Host.HttpListener"  Version="2.0.2" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <PackageReference Include="Microsoft.Owin.Hosting"  Version="2.0.2" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <PackageReference Include="CommonServiceLocator" Version = "1.3" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <PackageReference Include="Unity" Version = "4.0.1" Culture="neutral" PublicKeyToken="6d32ff45e0ccc69f" processorArchitecture="MSIL"/>
+    <PackageReference Include="Owin" Version = "1.0" Culture="neutral" PublicKeyToken="f0ebd12fd5e55cc5" processorArchitecture="MSIL"/>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version = "5.2.3" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version = "5.2.3" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version = "5.2.3" Culture="neutral" PublicKeyToken="31bf3856ad364e35" processorArchitecture="MSIL"/>
+    <Reference Include="System.Xml" />
+    <PackageReference Include="Unity.WebAPI" Version = "5.2.3" Culture="neutral" PublicKeyToken="43da31bc42a85347" processorArchitecture="MSIL"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="WebService\IWebServiceAppBuilder.cs" />
+    <Compile Include="WebService\Startup.cs" />
+    <Compile Include="WebService\DefaultController.cs" />
+    <Compile Include="HealthManagerHelper.cs" />
+    <Compile Include="IDataInterface.cs" />
+    <Compile Include="CoordinatorService.cs" />
+    <Compile Include="WebService\OwinCommunicationListener.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="RepairManagerHelper.cs" />
+    <Compile Include="ServiceEventSource.cs" />
+    <Compile Include="$(CommonRoot)\NodeAgentSFUtilityInterface.cs" />
+    <Compile Include="$(CommonRoot)\\ExecutorData.cs" />
+    <Compile Include="$(CommonRoot)\\SerializationUtility.cs" />
+    <Compile Include="$(CommonRoot)\\WindowsUpdateOperationResult.cs" />
+    <Compile Include="WebService\UnityConfig.cs" />
+    <Compile Include="WindowsUpdateNodeResults.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PackageRoot\Config\Settings.xml" />
+    <None Include="PackageRoot\ServiceManifest.xml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TelemetryLib\src\TelemetryLib.csproj">
+      <Project>{7bc6991f-c840-413e-b1cd-4025947cf5fa}</Project>
+      <Name>TelemetryLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

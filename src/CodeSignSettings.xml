@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSignSettings xmlns="IdCodeSign/CodeSignSettings">
+  <Product>ServiceFabricPatchOrchestrationApplication</Product>
+  <BuildNumber>%BuildNumber%</BuildNumber>
+  <SourceControlServer>%GitOriginServer%</SourceControlServer>
+  <BranchName>%GitBranchName%</BranchName>
+  <Description>ServiceFabric application to patch OS</Description>
+  <SourcePath>%BinariesBuildTypeArchDirectory%</SourcePath>
+  <StrongNameCert>72</StrongNameCert>
+  <AuthenticodeCert>402</AuthenticodeCert>
+  <Approvers>nachandr;raunakp</Approvers>
+  <Directories>
+    <SourceDirectory>
+      <PathFromRootSource>PatchOrchestrationApplication\CoordinatorServicePkg\Code</PathFromRootSource>
+      <FileData>
+        <FileTypes>.exe,.dll,.ps1,.psm1,.psd1</FileTypes>
+        </FileData>
+    </SourceDirectory>
+    <SourceDirectory>
+      <PathFromRootSource>PatchOrchestrationApplication\NodeAgentServicePkg\Code</PathFromRootSource>
+      <FileData>
+        <FileTypes>.exe,.dll,.ps1</FileTypes>
+      </FileData>
+    </SourceDirectory>
+  </Directories>      
+</CodeSignSettings>
