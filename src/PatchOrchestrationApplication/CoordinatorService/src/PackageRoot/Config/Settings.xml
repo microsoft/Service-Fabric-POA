@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <!-- This is used by the StateManager's replicator. -->
+  <Section Name="ReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ReplicatorEndpoint" />
+  </Section>
+  <!-- This is used for securing StateManager's replication traffic. -->
+  <Section Name="ReplicatorSecurityConfig" />
+
+  <!-- Add your custom configuration sections and parameters here. -->
+  <Section Name="CoordinatorService">
+    <!--Maximum number of Windows Update results history which should be cached
+        Default value of 3000 is assuming
+          Number of nodes are 20
+          Number of updates happening on a node per month is 5
+          Number of results per operation can be 10
+          And results for past 3 months should be stored
+    -->
+    <Parameter Name="MaxResultsToCache" Value="" MustOverride="true" />
+    <!--TaskApprovalPolicy indicates policy to be used by CoordinatorService to install windows updates across the SF cluster nodes
+    Allowed values are
+      NodeWise - Windows update will be installed one node at a time
+      UpgradeDomainWise - Windows update would be installed one upgrade domain at a time (at max
+      all the nodes belonging to an upgrade domain can go for windows update)
+    -->
+    <Parameter Name="TaskApprovalPolicy" Value="" MustOverride="true" />
+  </Section>
+</Settings>

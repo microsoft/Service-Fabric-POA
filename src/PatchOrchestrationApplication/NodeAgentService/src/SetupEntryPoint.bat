@@ -1,0 +1,1 @@
+InstallAndRunService.bat > SetupLogs.txt

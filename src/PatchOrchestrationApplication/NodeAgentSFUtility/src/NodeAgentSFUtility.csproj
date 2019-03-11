@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{5C4944F8-AC08-43C8-886C-AC11DDBF7E2F}</ProjectGuid>
+    <SrcRoot>..\..\..\..\src</SrcRoot>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility</RootNamespace>
+    <AssemblyName>NodeAgentSFUtility</AssemblyName>
+  </PropertyGroup>
+  <Import Project="$(SrcRoot)\properties\common.props" />
+  <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Runtime.Serialization" />
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "2.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric" Version = "5.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "2.4.145"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="ServiceEventSource.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="NodeAgentSFUtilityDll.csproj">
+      <Project>{8b11a071-10b0-4ac9-aa88-5f7d917b79ed}</Project>
+      <Name>NodeAgentSFUtilityDll</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

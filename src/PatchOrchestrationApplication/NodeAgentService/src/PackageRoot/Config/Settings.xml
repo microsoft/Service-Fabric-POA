@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <!-- Add your custom configuration sections and parameters here -->
+  <Section Name="NodeAgentService">
+    <!-- Maximum size of PatchOrchestrationApplication logs in MB, which can be persisted locally on node -->
+    <Parameter Name="LogsDiskQuotaInMB" Value="" MustOverride="true" />
+  </Section>
+  <!-- Below setting section governs the configuration of NTService -->
+  <Section Name="NTServiceSettings">
+    <!-- Query to get windows updates, refer to criteria field at https://msdn.microsoft.com/en-us/library/windows/desktop/aa386526(v=vs.85).aspx for more details -->
+    <Parameter Name="WUQuery" Value="" MustOverride="true" />
+    <!-- This flag will only allow windows OS updates to be installed. -->
+    <Parameter Name="InstallWindowsOSOnlyUpdates" Value="" MustOverride="true" />
+    <!-- Operation will throw a timeout exception if not able to complete execution in specified time -->
+    <Parameter Name="WUOperationTimeOutInMinutes" Value="" MustOverride="true" />
+    <!--This configuration decides the maximum number of times the service would reschedule the Windows Update in case operation fails persistently -->
+    <Parameter Name="WURescheduleCount" Value="" MustOverride="true" />
+    <!--This configuration decides the interval at which service would reschedule the Windows Update in case failure persists -->
+    <Parameter Name="WURescheduleTimeInMinutes" Value="" MustOverride="true" />
+    <!--The frequency for installing Windows Update. The format and Possible Values are as below
+        1. Monthly,DD,HH:MM:SS -> Eg: Monthly,5,12:22:32 (day of month should be between 1-28)
+        2. Weekly,DAY,HH:MM:SS -> Weekly,Tuesday,12:22:32
+        3. Daily,HH:MM:SS -> Daily,12:22:32
+        5. None -> Indicates that Windows Update shouldn't be done
+        NOTE : All the time are in UTC
+    -->
+    <Parameter Name="WUFrequency" Value="" MustOverride="true" />
+    <!-- This flag enables the NodeAgentService to accept EULA for windows update on behalf of user -->
+    <Parameter Name="AcceptWindowsUpdateEula" Value="" MustOverride="true" />
+  </Section>
+</Settings>

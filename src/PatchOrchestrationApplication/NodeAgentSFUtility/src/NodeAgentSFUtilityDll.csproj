@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{8B11A071-10B0-4AC9-AA88-5F7D917B79ED}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility</RootNamespace>
+    <AssemblyName>CommandProcessor</AssemblyName>
+    <SrcRoot>..\..\..\..\src</SrcRoot>
+  </PropertyGroup>
+  <Import Project="$(SrcRoot)\properties\common.props" />
+  <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Runtime.Serialization" />
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "2.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric" Version = "5.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "2.4.145"/>
+    <PackageReference Include="Newtonsoft.Json" Version = "10.0.2"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommandProcessor.cs" />
+    <Compile Include="Helpers\CoordinatorServiceHelper.cs" />
+    <Compile Include="..\..\CoordinatorService\src\IDataInterface.cs">
+      <Link>IDataInterface.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\NodeAgentSFUtilityInterface.cs">
+      <Link>NodeAgentSFUtilityInterface.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\WindowsUpdateOperationResult.cs">
+      <Link>WindowUpdateOperationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\ExecutorData.cs" />
+    <Compile Include="..\..\Common\IPatchOrchestrationEvents.cs" />
+    <Compile Include="..\..\Common\SerializationUtility.cs" />
+    <Compile Include="Helpers\HealthManagerHelper.cs" />
+    <Compile Include="Helpers\RepairManagerHelper.cs" />
+    <Compile Include="Helpers\ServiceEventSource.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

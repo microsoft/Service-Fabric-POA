@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build"  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>259c33f3-4507-4928-b135-fe0322edc87a</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Id>ServiceFabric.PatchOrchestrationApplication</Id>
+    <Title>ServiceFabric.PatchOrchestrationApplication</Title>
+    <Version>1.3.2</Version>
+    <Authors>nachandr</Authors>
+    <Owners>nachandr</Owners>
+    <Description>This package contains Service Fabric Patch Orchestration Application.</Description>
+    <Summary>This package contains Service Fabric Patch Orchestration Application, the application helps in keeping the nodes of service fabric cluster updated with latest windows updates</Summary>
+    <Tags>PatchOrchestrationApplication</Tags>
+    <PackageVersion>$(Version)</PackageVersion>
+    <SrcRoot>..\..\..\..\src</SrcRoot>
+  </PropertyGroup>
+  <Import Project="$(SrcRoot)\properties\common.props" />
+  <Import Project="$(SrcRoot)\properties\nuproj.props" />
+  <Import Project="$(PackageRoot)\NuProj.0.11.30\tools\NuProj.props" />
+  <PropertyGroup Label="OverrideOutputPath">
+    <OutputPath>$(OUTPUTROOT)\packages\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageContents Include="$(OUTPUTROOT)\$(Configuration)\**\*.*" />
+    <File Include="@(PackageContents)">
+      <TargetPath>ApplicationPackage\%(RecursiveDir)</TargetPath>
+    </File>
+  </ItemGroup>
+  <ItemGroup>
+    <FinalNuPkgs Include ="bin\$(BuildType)\*.*" />
+  </ItemGroup>
+  <Import Project="$(PackageRoot)\NuProj.0.11.30\tools\NuProj.targets" />
+</Project>
