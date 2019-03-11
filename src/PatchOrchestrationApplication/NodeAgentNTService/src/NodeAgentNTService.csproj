@@ -8,7 +8,7 @@
     <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService</RootNamespace>
     <AssemblyName>NodeAgentNTService</AssemblyName>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
   <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
   <PropertyGroup>
     <StartupObject>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Program</StartupObject>

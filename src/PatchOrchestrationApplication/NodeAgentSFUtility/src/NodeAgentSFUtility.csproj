@@ -7,7 +7,7 @@
     <RootNamespace>Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility</RootNamespace>
     <AssemblyName>NodeAgentSFUtility</AssemblyName>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
   <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
   <ItemGroup>
     <Reference Include="System" />

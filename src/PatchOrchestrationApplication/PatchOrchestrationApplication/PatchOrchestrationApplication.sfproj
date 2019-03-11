@@ -7,7 +7,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SrcRoot>..\..\..\src</SrcRoot>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
   <Import Project="$(PackageRoot)\Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.6.7\build\Microsoft.VisualStudio.Azure.Fabric.Application.props" />
  <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">

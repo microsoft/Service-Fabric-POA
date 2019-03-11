@@ -25,8 +25,8 @@
     <PackageVersion>$(Version)</PackageVersion>
     <SrcRoot>..\..\..\..\src</SrcRoot>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
-  <Import Project="$(SrcRoot)\properties\service_fabric_nuproj.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
+  <Import Project="$(SrcRoot)\properties\nuproj.props" />
   <Import Project="$(PackageRoot)\NuProj.0.11.30\tools\NuProj.props" />
   <PropertyGroup Label="OverrideOutputPath">
     <OutputPath>$(OUTPUTROOT)\packages\$(Configuration)\</OutputPath>

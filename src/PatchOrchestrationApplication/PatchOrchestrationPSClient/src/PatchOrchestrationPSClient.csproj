@@ -8,7 +8,7 @@
     <AssemblyName>PatchOrchestrationPSClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
-  <Import Project="..\..\..\properties\service_fabric_managed_prod.props" />
+  <Import Project="..\..\..\properties\common.props" />
   <Import Project="..\..\..\properties\EnableStylecop.props" />
   <ItemGroup>
     <Reference Include="System" />

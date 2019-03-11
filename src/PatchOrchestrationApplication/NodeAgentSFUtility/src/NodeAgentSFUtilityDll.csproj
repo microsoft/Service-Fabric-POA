@@ -7,7 +7,7 @@
     <AssemblyName>CommandProcessor</AssemblyName>
     <SrcRoot>..\..\..\..\src</SrcRoot>
   </PropertyGroup>
-  <Import Project="$(SrcRoot)\properties\service_fabric_managed_prod.props" />
+  <Import Project="$(SrcRoot)\properties\common.props" />
   <Import Project="$(SrcRoot)\properties\EnableStylecop.props" />
   <PropertyGroup>
     <StartupObject />
