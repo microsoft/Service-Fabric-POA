@@ -8,12 +8,7 @@ trigger:
 
 pool:
   vmImage: 'VS2017-Win2016'
-  demands:
-  - msbuild
-  - visualstudio
-  - Cmd
-  - powershell
-  - Agent.Version -gtVersion 2.148.0 
+
 steps:
 - task: PowerShell@2
   displayName: 'Build Code'
