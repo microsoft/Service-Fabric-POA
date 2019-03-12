@@ -13,7 +13,7 @@ pool:
   - visualstudio
   - Cmd
   - powershell
-
+  - Agent.Version -gtVersion 2.148.0 
 steps:
 - task: PowerShell@2
   displayName: 'Build Code'
