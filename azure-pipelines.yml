@@ -14,4 +14,4 @@ steps:
   displayName: 'Build Code'
   inputs:
     targetType: filePath
-    filePath: './build.ps1'
+    filePath: './buildasds.ps1'
