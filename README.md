@@ -5,6 +5,8 @@ author: raunakpandya, brkhande
 ---
 
 # Service-Fabric-POA
+[![Build Status](https://dev.azure.com/ms/Service-Fabric-POA/_apis/build/status/Microsoft.Service-Fabric-POA?branchName=master)](https://dev.azure.com/ms/Service-Fabric-POA/_build/latest?definitionId=80&branchName=master)
+
 Patch Orchestration Application(POA) is an Azure Service Fabric application that automates operating system patching on a Service Fabric cluster without downtime. This repo only contains code for orchestrating Windows operating system updates.
 
 The patch orchestration app provides the following features:
