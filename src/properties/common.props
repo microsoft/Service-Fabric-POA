@@ -36,6 +36,13 @@
     <AssemblyClsCompliant>true</AssemblyClsCompliant>
   </PropertyGroup>
 
+  <!-- Enable delay signing with Key.snk -->
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>true</DelaySign>
+    <AssemblyOriginatorKeyFile>$(SrcRoot)/properties/Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <!-- debug and release switches -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
