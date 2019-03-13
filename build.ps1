@@ -26,7 +26,7 @@ param
     [string]$MSBuildFullPath,
 
     #CreateNugetPackage
-    [switch]$CreateNugetPackage,
+    [switch]$CreateNugetPackageOnly,
 
     # AppInsightsKey
     [string]$AppInsightsKey = ""
@@ -113,23 +113,7 @@ if (!(Test-Path $MSBuildFullPath))
     throw "Unable to find MSBuild installed on this machine. Please install Visual Studio 2017 or if its installed at non-default location, provide the full ppath to msbuild using -MSBuildFullPath parameter."
 }
 
-
-Set-location -Path $SrcRoot
-Write-Host "Source root is $srcRoot"
-
-$nugetArgs = @(
-    "restore",
-    "$PackageConfigPath",
-    "-PackagesDirectory",
-    "$packagesDirectory")
-
-& $NugetFullPath $nugetArgs
-if ($lastexitcode -ne 0) {
-    Set-location -Path $PSScriptRoot
-    throw ("Failed " + $NugetFullPath + " " + $nugetArgs)
-}
-
-if($CreateNugetPackage)
+if($CreateNugetPackageOnly)
 {
     $nugetNuProjArgs = @(
     "restore",
@@ -142,26 +126,6 @@ if($CreateNugetPackage)
         Set-location -Path $PSScriptRoot
         throw ("Failed " + $NugetFullPath + " " + $nugetNuProjArgs)
     }
-}
-
-Write-Output "Changing the working directory to $srcRoot"
-Set-location -Path $srcRoot
-Write-Output "Using msbuild from $msbuildFullPath"
-$msbuildArgs = @(
-    "/nr:false", 
-    "/nologo", 
-    "$restore"
-    "/t:$buildTarget", 
-    "/verbosity:$verbosity",  
-    "/property:RequestedVerbosity=$verbosity", 
-    "/property:Configuration=$configuration",
-    "/property:AppInsightsKey=$AppInsightsKey",
-    "/p:RestorePackagesPath=$packagesDirectory",
-    $args)
-& $msbuildFullPath $msbuildArgs
-
-if($CreateNugetPackage)
-{
     Write-Output "Changing the working directory to $nuprojPath"
     Set-location -Path $nuprojPath
     $msbuildArgs = @(
@@ -175,5 +139,37 @@ if($CreateNugetPackage)
         $args)
     & $msbuildFullPath $msbuildArgs
 }
+else {
+    Set-location -Path $SrcRoot
+    Write-Host "Source root is $srcRoot"
+
+    $nugetArgs = @(
+        "restore",
+        "$PackageConfigPath",
+        "-PackagesDirectory",
+        "$packagesDirectory")
+
+    & $NugetFullPath $nugetArgs
+    if ($lastexitcode -ne 0) {
+        Set-location -Path $PSScriptRoot
+        throw ("Failed " + $NugetFullPath + " " + $nugetArgs)
+    }
+    Write-Output "Changing the working directory to $srcRoot"
+    Set-location -Path $srcRoot
+    Write-Output "Using msbuild from $msbuildFullPath"
+    $msbuildArgs = @(
+        "/nr:false", 
+        "/nologo", 
+        "$restore"
+        "/t:$buildTarget", 
+        "/verbosity:$verbosity",  
+        "/property:RequestedVerbosity=$verbosity", 
+        "/property:Configuration=$configuration",
+        "/property:AppInsightsKey=$AppInsightsKey",
+        "/p:RestorePackagesPath=$packagesDirectory",
+        $args)
+    & $msbuildFullPath $msbuildArgs
+}
+
 
 Set-location -Path $presentWorkingDirectory
