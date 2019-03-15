@@ -131,7 +131,6 @@ if($CreateNugetPackageOnly)
     $msbuildArgs = @(
         "/nr:false", 
         "/nologo", 
-        "$restore"
         "/t:Build", 
         "/verbosity:$verbosity",  
         "/property:RequestedVerbosity=$verbosity",
@@ -160,7 +159,6 @@ else {
     $msbuildArgs = @(
         "/nr:false", 
         "/nologo", 
-        "$restore"
         "/t:$buildTarget", 
         "/verbosity:$verbosity",  
         "/property:RequestedVerbosity=$verbosity", 
