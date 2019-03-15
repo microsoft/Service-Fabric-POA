@@ -42,9 +42,10 @@ $PackageConfigPath = join-path $PSScriptRoot "src\PatchOrchestrationApplication\
 $packagesDirectory = join-path $PSScriptRoot "packages"
 $nuprojPackagesConfigPath = join-path $PSScriptRoot "src\PatchOrchestrationApplication\PatchOrchestrationApplication\NugetPackage\packages.config"
 $nuprojPath = join-path $PSScriptRoot "src\PatchOrchestrationApplication\PatchOrchestrationApplication\NugetPackage"
+$nugetConfigFilePath = join-path $PSScriptRoot "nuget.config"
+
 
 if ($Target -eq "rebuild") {
-    $restore = "-r"
     $buildTarget = "restore;clean;rebuild;package"
 } elseif ($Target -eq "clean") {
     $buildTarget = "clean"
@@ -119,7 +120,9 @@ if($CreateNugetPackageOnly)
     "restore",
     "$nuprojPackagesConfigPath",
     "-PackagesDirectory",
-    "$packagesDirectory")
+    "$packagesDirectory",
+    "-ConfigFile",
+    "$nugetConfigFilePath")
 
     & $NugetFullPath $nugetNuProjArgs
     if ($lastexitcode -ne 0) {
@@ -146,7 +149,9 @@ else {
         "restore",
         "$PackageConfigPath",
         "-PackagesDirectory",
-        "$packagesDirectory")
+        "$packagesDirectory",
+        "-ConfigFile",
+        "$nugetConfigFilePath")
 
     & $NugetFullPath $nugetArgs
     if ($lastexitcode -ne 0) {
