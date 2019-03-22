@@ -122,9 +122,7 @@ if($CreateNugetPackageOnly)
     "-PackagesDirectory",
     "$packagesDirectory",
     "-ConfigFile",
-    "$nugetConfigFilePath",
-    "-Source",
-    "https://api.nuget.org/v3/index.json")
+    "$nugetConfigFilePath")
 
     & $NugetFullPath $nugetNuProjArgs
     if ($lastexitcode -ne 0) {
@@ -154,9 +152,7 @@ else {
         "-PackagesDirectory",
         "$packagesDirectory",
         "-ConfigFile",
-        "$nugetConfigFilePath",
-        "-Source",
-        "https://api.nuget.org/v3/index.json")
+        "$nugetConfigFilePath")
 
     & $NugetFullPath $nugetArgs
     if ($lastexitcode -ne 0) {
