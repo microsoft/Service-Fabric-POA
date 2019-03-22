@@ -140,6 +140,7 @@ if($CreateNugetPackageOnly)
         "/verbosity:$verbosity",  
         "/property:RequestedVerbosity=$verbosity",
         "/property:Configuration=$configuration",
+        "/property:RestoreConfigFile=$nugetConfigFilePath",
         $args)
     & $msbuildFullPath $msbuildArgs
 }
@@ -172,6 +173,7 @@ else {
         "/verbosity:$verbosity",  
         "/property:RequestedVerbosity=$verbosity", 
         "/property:Configuration=$configuration",
+        "/property:RestoreConfigFile=$nugetConfigFilePath",
         "/property:AppInsightsKey=$AppInsightsKey",
         "/p:RestorePackagesPath=$packagesDirectory",
         $args)
