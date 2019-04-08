@@ -8,7 +8,8 @@ using System.Fabric.Query;
 using System.Fabric.Repair;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Fabric.Health;
+    
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
     using System.Diagnostics;
@@ -32,6 +33,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string RepairManagerStatus = "RepairManager status";
         private const string NodeTimeoutStatusFormat = "Node : {0} exceeding installation timeout";
         internal TaskApprovalPolicy RmPolicy = TaskApprovalPolicy.NodeWise;
+        private const string RMTaskUpdateProperty = "RMTaskUpdate";
+        private int postUpdateCount = 0;
 
         /// <summary>
         /// Default timeout for async operations
@@ -274,6 +277,94 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+        public async Task PostRMTaskUpdates(CancellationToken cancellationToken)
+        {
+            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+            IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
+            RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (claimedTaskList.Any())
+            {
+                if (!processingTaskList.Any())
+                {
+                    // This means that repair tasks are not getting approved.
+                    ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
+                    if (clusterHealth.AggregatedHealthState != HealthState.Ok)
+                    {
+                        // Reset Count
+                        postUpdateCount = 0;
+                        string warningDescription = "Cluster is unhealthy. Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
+                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                    }
+                    else
+                    {
+                        postUpdateCount++;
+                        if (postUpdateCount > 60)
+                        {
+                            // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
+                            postUpdateCount = 0;
+                            string warningDescription = "POA repair tasks are not getting approved, So, update installation is halted. Please try to find out why is this blocked.";
+                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                        }
+                    }
+                }
+                else
+                {
+                    // Reset Count
+                    postUpdateCount = 0;
+                    await PostRMTaskNodeUpdate(cancellationToken);
+                }
+            }
+            else
+            {
+                // Reset Count
+                postUpdateCount = 0;
+                if (processingTaskList.Any())
+                {
+                    await PostRMTaskNodeUpdate(cancellationToken);
+                }
+                else
+                {
+                    // Post the health event saying that there is no repair task and things are working fine.
+                    string description = "No claimed tasks and no processing tasks are found.";
+                    HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok, -1);
+                }
+            }
+        } 
+
+        private async Task PostRMTaskNodeUpdate(CancellationToken cancellationToken)
+        {
+            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+            HashSet<string> processingNodes = new HashSet<string>();
+            HashSet<string> pendingNodes = new HashSet<string>();
+            IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
+            foreach (var task in claimedTaskList)
+            {
+                pendingNodes.Add(task.Target.ToString());
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            RepairTaskList processingTaskListFinal = await this.GetRepairTasksUnderProcessing(cancellationToken);
+            foreach (var task in processingTaskListFinal)
+            {
+                processingNodes.Add(task.Target.ToString());
+            }
+
+            string pendingNodesString = string.Join(",", pendingNodes);
+            string processingNodesString = string.Join(",", processingNodes);
+            
+            if(String.IsNullOrEmpty(pendingNodesString))
+            {
+                pendingNodesString = "None";
+            }
+
+            if (String.IsNullOrEmpty(processingNodesString))
+            {
+                processingNodesString = "None";
+            }
+            string description = string.Format("ProcessingNodes :{0}, PendingNodes: {1}", pendingNodesString, processingNodesString);
+            HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok);
+        }
+
         /// <summary>
         /// Gets the upgrade domain from current repair tasks under processing, ideally all the repair tasks under processing should've the same upgrade domain.
         /// However if repair tasks belonging to multiple UpgradeDomains are found, then we consider the UD of first repair task in the list of repair tasks.
@@ -371,7 +462,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     throw new InvalidOperationException(errorMessage);
                 }
             }
+
         }
+
+        
 
         /// <summary>
         /// Fetches all the repair tasks which are under execution and checks
