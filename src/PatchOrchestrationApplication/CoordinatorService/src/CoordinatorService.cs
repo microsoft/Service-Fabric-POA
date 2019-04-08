@@ -38,7 +38,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private string SettingsSectionName = "CoordinatorService";
         internal static string ResultsStoreName = "WindowsUpdateResults";
         private RepairManagerHelper rmHelper;
-
         private TelemetryEvents telemetryEvents;
 
         public CoordinatorService(StatefulServiceContext context)
@@ -99,7 +98,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <param name="cancellationToken"></param>
         /// <returns>Task for the async operation</returns>
         private async Task RunLoopAsync(CancellationToken cancellationToken)
-        {
+        {   
             while (true)
             {
                 if (await this.rmHelper.CheckRepairManagerStatus(cancellationToken))
@@ -113,6 +112,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     await this.rmHelper.TimeoutRepairTasks(cancellationToken);
                     // Cleanup the ResultStore in case it exceeds the quota
                     await this.CleanupWuOperationResult(cancellationToken);
+                    // This task will post updates of Repair tasks on the Coordinator Service.
+                    await this.rmHelper.PostRMTaskUpdates(cancellationToken);
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(this.pollingFrequencyInSec), cancellationToken);
