@@ -45,10 +45,7 @@
     <ApplicationProjectTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.targets</ApplicationProjectTargetsPath>
   </PropertyGroup>
   <Import Project="$(ApplicationProjectTargetsPath)"/>
-  <Target Name="AfterPackage" AfterTargets="Package">
-    <Copy SourceFiles="InteropLibrary\Interop.WUApiLib.dll" DestinationFolder="$(PackageLocation)\NodeAgentServicePkg\Code" />
-  </Target>
-  <Target Name="CopyPackage" AfterTargets="AfterPackage">
+  <Target Name="CopyPackage" AfterTargets="Package">
     <ItemGroup>
         <PackageContents Include="$(PackageLocation)\**\*.*" />
     </ItemGroup>
