@@ -32,7 +32,7 @@ param
     [string]$AppInsightsKey = "",
 
     # DelaySign
-    [switch]$DelaySign
+    [bool]$DelaySign
 )
 
 $presentWorkingDirectory= Get-Location
@@ -50,12 +50,6 @@ if ($Target -eq "rebuild") {
     $buildTarget = "restore;clean;rebuild;package"
 } elseif ($Target -eq "clean") {
     $buildTarget = "clean"
-}
-
-$DelaySignString = 'false'
-if($DelaySign)
-{
-    $DelaySignString = 'DelaySign'
 }
 
 if($MSBuildFullPath -ne "")
@@ -144,6 +138,7 @@ if($CreateNugetPackageOnly)
         "/verbosity:$verbosity",  
         "/property:RequestedVerbosity=$verbosity",
         "/property:Configuration=$configuration",
+        "/property:DelaySign=$DelaySign",
         $args)
     & $msbuildFullPath $msbuildArgs
 }
@@ -174,7 +169,8 @@ else {
         "/property:RequestedVerbosity=$verbosity", 
         "/property:Configuration=$configuration",
         "/property:AppInsightsKey=$AppInsightsKey",
-        "/p:RestorePackagesPath=$packagesDirectory",
+        "/property:RestorePackagesPath=$packagesDirectory",
+        "/property:DelaySign=$DelaySign",
         $args)
     & $msbuildFullPath $msbuildArgs
 }
