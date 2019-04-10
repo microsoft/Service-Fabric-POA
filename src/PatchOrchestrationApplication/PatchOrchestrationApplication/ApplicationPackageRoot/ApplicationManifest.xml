@@ -6,7 +6,6 @@
     <Parameter Name="CoordinatorService_PlacementConstraints" DefaultValue="" />
     <Parameter Name="NodeAgentService_InstanceCount" DefaultValue="-1" />
     <Parameter Name="NodeAgentService_PlacementConstraints" DefaultValue="" />
-
     <!--Maximum number of Windows Update results history which should be cached
         Default value of 3000 is assuming
           Number of nodes are 20
@@ -64,26 +63,26 @@
   </ServiceManifestImport>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="NodeAgentServicePkg" ServiceManifestVersion="1.3.2" />
-      <ConfigOverrides>
-        <ConfigOverride Name="Config">
-          <Settings>
-            <Section Name="NodeAgentService">
-              <Parameter Name="LogsDiskQuotaInMB" Value="[LogsDiskQuotaInMB]" />
-            </Section>
-            <Section Name="NTServiceSettings">
-              <Parameter Name="WUQuery" Value="[WUQuery]" />
-              <Parameter Name="InstallWindowsOSOnlyUpdates" Value="[InstallWindowsOSOnlyUpdates]" />
-              <Parameter Name="WUOperationTimeOutInMinutes" Value="[WUOperationTimeOutInMinutes]" />
-              <Parameter Name="WURescheduleCount" Value="[WURescheduleCount]" />
-              <Parameter Name="WURescheduleTimeInMinutes" Value="[WURescheduleTimeInMinutes]" />
-              <Parameter Name="WUFrequency" Value="[WUFrequency]" />
-              <Parameter Name="AcceptWindowsUpdateEula" Value="[AcceptWindowsUpdateEula]" />
-            </Section>
-          </Settings>
-        </ConfigOverride>
-      </ConfigOverrides>
+    <ConfigOverrides>
+      <ConfigOverride Name="Config">
+        <Settings>
+          <Section Name="NodeAgentService">
+            <Parameter Name="LogsDiskQuotaInMB" Value="[LogsDiskQuotaInMB]" />
+          </Section>
+          <Section Name="NTServiceSettings">
+            <Parameter Name="WUQuery" Value="[WUQuery]" />
+            <Parameter Name="InstallWindowsOSOnlyUpdates" Value="[InstallWindowsOSOnlyUpdates]" />
+            <Parameter Name="WUOperationTimeOutInMinutes" Value="[WUOperationTimeOutInMinutes]" />
+            <Parameter Name="WURescheduleCount" Value="[WURescheduleCount]" />
+            <Parameter Name="WURescheduleTimeInMinutes" Value="[WURescheduleTimeInMinutes]" />
+            <Parameter Name="WUFrequency" Value="[WUFrequency]" />
+            <Parameter Name="AcceptWindowsUpdateEula" Value="[AcceptWindowsUpdateEula]" />
+          </Section>
+        </Settings>
+      </ConfigOverride>
+    </ConfigOverrides>
     <Policies>
-        <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
+      <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
     </Policies>
   </ServiceManifestImport>
   <DefaultServices>
@@ -105,13 +104,13 @@
       </StatelessService>
     </Service>
   </DefaultServices>
-   <Principals>
-      <Users>
-         <User Name="SetupAdminUser">
-            <MemberOf>
-               <SystemGroup Name="Administrators" />
-            </MemberOf>
-         </User>
-      </Users>
-   </Principals>
+  <Principals>
+    <Users>
+      <User Name="SetupAdminUser">
+        <MemberOf>
+          <SystemGroup Name="Administrators" />
+        </MemberOf>
+      </User>
+    </Users>
+  </Principals>
 </ApplicationManifest>
