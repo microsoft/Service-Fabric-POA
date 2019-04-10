@@ -37,7 +37,7 @@
   </PropertyGroup>
 
   <!-- Enable delay signing with Key.snk -->
-  <PropertyGroup>
+  <PropertyGroup Condition = "'$(DelaySign)' == 'true'">
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
     <AssemblyOriginatorKeyFile>$(SrcRoot)/properties/Key.snk</AssemblyOriginatorKeyFile>
