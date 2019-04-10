@@ -46,9 +46,6 @@
   </PropertyGroup>
   <Import Project="$(ApplicationProjectTargetsPath)"/>
   <Target Name="CopyPackage" AfterTargets="Package">
-    <ItemGroup>
-        <PackageContents Include="$(PackageLocation)\**\*.*" />
-    </ItemGroup>
     <Copy SourceFiles="@(PackageContents)" DestinationFolder="$(OUTPUTROOT)\$(Configuration)\PatchOrchestrationApplication\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="Scripts\Deploy.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />
     <Copy SourceFiles="Scripts\Undeploy.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />
