@@ -52,6 +52,12 @@ if ($Target -eq "rebuild") {
     $buildTarget = "clean"
 }
 
+$DelaySignString = 'false'
+if($DelaySign)
+{
+    $DelaySignString = 'true'
+}
+
 if($MSBuildFullPath -ne "")
 {
     if (!(Test-Path $MSBuildFullPath))
