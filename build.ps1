@@ -29,8 +29,10 @@ param
     [switch]$CreateNugetPackageOnly,
 
     # AppInsightsKey
-    [string]$AppInsightsKey = ""
+    [string]$AppInsightsKey = "",
 
+    # DelaySign
+    [switch]$DelaySign
 )
 
 $presentWorkingDirectory= Get-Location
