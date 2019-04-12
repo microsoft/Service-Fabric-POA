@@ -62,7 +62,7 @@
     </ConfigOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="NodeAgentServicePkg" ServiceManifestVersion="1.3.2" />
+    <ServiceManifestRef ServiceManifestName="NodeAgentServicePkg" ServiceManifestVersion="1.3.3" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
