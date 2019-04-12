@@ -97,6 +97,18 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
                             TimeSpan.FromSeconds(int.Parse(args[6])),
                             this.cancellationTokenSource.Token);
 
+                case "ReportHealthOnDeployedServicePackage":
+                    return
+                        this.ReportHealthOnDeployedServicePackage(
+                            new Uri(args[1]),
+                            args[2],
+                            args[3],
+                            args[4],
+                            (HealthState)Enum.Parse(typeof(HealthState), (args[5])),
+                            long.Parse(args[6]),
+                            TimeSpan.FromSeconds(int.Parse(args[7])),
+                            this.cancellationTokenSource.Token);
+
                 case "GetApplicationDeployedStatus":
                     return
                         await this.GetApplicationDeployedStatusAsync(new Uri(args[1]), TimeSpan.FromSeconds(int.Parse(args[2])),
@@ -466,6 +478,28 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
             return result;
         }
 
+
+
+        /// <summary>
+        /// Utility to Report health for the NodeAgentService. Typical usecases are as below
+        /// If windows update operation is not successful after exhausting all reties, user can post warning level health report
+        /// If windows update operation is successfull, user can post Ok level health report.
+        /// </summary>
+        /// <param name="applicationName">Application name for constructing the servicename</param>
+        /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
+        /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
+        /// <param name="healthState"><see cref="HealthState"/>Indicating the severity of the health report</param>
+        /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
+        /// <param name="timeout">Timeout for the async operation</param>
+        /// <param name="cancellationToken">Cancellation token to cancel this async operation</param>
+        /// <returns>Operation result in <see cref="NodeAgentSfUtilityExitCodes"/></returns>
+        public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(Uri applicationName, string nodeName,String healthProperty, String healthDescription, HealthState healthState,
+    long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnDeployedServicePackage(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
+            ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
+            return result;
+        }
         /// <summary>
         /// Gets the application status of a deployed application
         /// </summary>

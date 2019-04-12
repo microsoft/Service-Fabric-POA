@@ -29,6 +29,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private UpdateSession _uSession;        
         private WUCollectionWrapper _wuCollectionWrapper;
         private Task<bool> _task;
+        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
 
         /// <summary>
         /// Initializes the update manager.
@@ -291,6 +292,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                                 break;
                             }
+                            string healthDescription = string.Format("Update Download started.");
+                            this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);
@@ -324,6 +327,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 case NodeAgentSfUtilityExitCodes.DownloadCompleted:
                 case NodeAgentSfUtilityExitCodes.InstallationApproved:
                     {
+                        if(wuOperationState == NodeAgentSfUtilityExitCodes.DownloadCompleted)
+                        {
+                            string healthDescriptionDownloadComplete = string.Format("Download completed waiting for approval. ");
+                            this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescriptionDownloadComplete, HealthState.Ok);
+                        }
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                         if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
                         {
@@ -331,7 +339,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             reschedule = true;
                             break;
                         }
-                        
+
+                        string healthDescription = string.Format("Installation in progress.");
+                        this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
+
                         OperationResultCode searchResult = SearchUpdates(cancellationToken);
                         reschedule = (searchResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
@@ -410,7 +421,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     _eventSource.InfoMessage("Installation Approval failed.");
                     return NodeAgentSfUtilityExitCodes.Failure;
                 }
-
                 this._helper.WaitOnTask(Task.Delay(TimeSpan.FromMinutes(this._serviceSettings.WUDelayBetweenRetriesInMinutes)), cancellationToken);
             }
             _eventSource.InfoMessage("Installation Approval failed.");

@@ -36,8 +36,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
             this._helper = new Helper();
             this._settingsManager = settingsManager;
             this._serviceSettings = settingsManager.GetSettings();
-            this._cancellationToken = cancellationToken;
-            this._nodeName = nodeName;
+            this._cancellationToken = cancellationToken;this._nodeName = nodeName;
             this._applicationUri = applicationUri;
         }
 
@@ -232,6 +231,43 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
             throw new Exception("Not able to report health.");
         }
 
+
+        /// <summary>
+        /// Report health for the NodeAgentServicePackage.
+        /// If windows update operation is not successful after exhausting all reties, we'll post warning level health report
+        /// If windows update operation is successful we'll post Ok level health report.
+        /// </summary>
+        /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
+        /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
+        /// <param name="healthState"><see cref="HealthState"/> indicating the severity of the health report, use <see cref="HealthState.Error"/> with caution</param>
+        /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
+        /// <returns>true if operation is success else false.</returns>
+        public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
+        {
+            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty, healthDescription, healthState, timeToLiveInMinutes, timeout);
+            string[] arguments = { "ReportHealthOnDeployedServicePackage", this._applicationUri.ToString(), this._nodeName, healthProperty, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString() };
+            ProcessExecutor processExecutor = new ProcessExecutor(SfUtilityFileName, CreateProcessArgument(arguments));
+
+            long retries = 0;
+            while (!this._cancellationToken.IsCancellationRequested)
+            {
+                if (processExecutor.Execute() == (int)NodeAgentSfUtilityExitCodes.Success)
+                {
+                    return NodeAgentSfUtilityExitCodes.Success;
+                }
+                if (retries >= this._serviceSettings.WUOperationRetryCount || this._cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                TimeSpan retryDelayTime = TimeSpan.FromMinutes(this._serviceSettings.WUDelayBetweenRetriesInMinutes);
+                this._helper.WaitOnTask(Task.Delay(retryDelayTime), this._cancellationToken);
+                retries++;
+            }
+
+            throw new Exception("Not able to report health.");
+        }
+
         public bool GetApplicationDeployedStatus(TimeSpan timeout)
         {
             _eventSource.InfoMessage("Getting Application deployed status for application : {0}", this._applicationUri.ToString());
@@ -309,6 +345,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         private string CreateProcessArgument(string[] arguments)
         {
             return '"' + String.Join("\" \"", arguments) + '"';
+        }
+
+        public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(Uri applicationName, string nodeName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 

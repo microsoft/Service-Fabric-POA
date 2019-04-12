@@ -29,8 +29,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private readonly WindowsUpdateManager _windowsUpdateManager;
         private readonly CancellationToken _cancellationToken;        
         private readonly NodeAgentSfUtility _nodeAgentSfUtility;
-        private readonly ServiceSettings _serviceSettings;                
-        
+        private readonly ServiceSettings _serviceSettings;
+        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
+
         /// <summary>
         /// Initializes timer manager.
         /// </summary>             
@@ -53,6 +54,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {
                 //System.Diagnostics.Debugger.Launch();
                 _eventSource.InfoMessage("Starting Timer.");
+                PostWUUpdateEventOnServicePackage();
+
                 this.WaitForSettingsFile();
                 this.Clean();
 
@@ -78,6 +81,30 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
         }
 
+
+        private void PostWUUpdateEventOnServicePackage()
+        {
+            CheckpointFileData fileData = this.ReadCheckpointFile();
+            string formatString = "LastAttempteWUTime : {0}, NextUpdateDownloadTime : {1} : Status {2}";
+            if (fileData.lastAttemptedUpdateTime == default(DateTime))
+            {
+                // It means dateTime last information not available.
+                if (fileData.schedulingDateTime == default(DateTime))
+                {
+                    string healthDescription = string.Format(formatString, "N/A", "N/A", "CheckPointFile Does not exist.");
+                    this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok, -1);
+                }
+                else{
+                    string healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString(), "Last attempted update time not available");
+                    this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok, -1);
+                }
+            }
+            else
+            {
+                string healthDescription = string.Format(formatString, fileData.lastAttemptedUpdateTime.ToString(), fileData.schedulingDateTime.ToString(), "Last attempted update time not available");
+                this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok, -1);
+            }
+        }
 
         /// <summary>
         /// This will disable the windows update on system.
@@ -244,6 +271,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 // Execute call back
                 if (this.ScheduleWindowsUpdatesFlag(fileData))
                 {
+                    // UpdateGoingOn.
                     bool retryNeeded = this.ScheduleWindowsUpdates();
 
                     if (retryNeeded)
@@ -314,9 +342,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         {
             CheckpointFileData checkpointFileData = new CheckpointFileData();
             checkpointFileData.schedulingDateTime = this.GetNextSchedulingTime();
+            checkpointFileData.lastAttemptedUpdateTime =  DateTime.UtcNow;
             checkpointFileData.rescheduleCount = 0;
             checkpointFileData.rescheduleNeeded = false;
             this.WriteCheckpointFile(checkpointFileData);
+            PostWUUpdateEventOnServicePackage();
         }
 
         private bool UpdateSettingsAndCreateCheckpoint()
@@ -403,7 +433,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 string[] arr = text.Split(' ');
                 checkpointFileData.schedulingDateTime = DateTime.ParseExact(arr[0], "yyyyMMddHHmmss", null);
                 checkpointFileData.rescheduleCount = (long)Convert.ChangeType(arr[1], typeof(long));
-                checkpointFileData.rescheduleNeeded = Boolean.Parse(arr[2]);                
+                checkpointFileData.rescheduleNeeded = Boolean.Parse(arr[2]);
+                if(arr.Length == 4)
+                {
+                    checkpointFileData.lastAttemptedUpdateTime = DateTime.ParseExact(arr[0], "yyyyMMddHHmmss", null);
+                }
             }
             _eventSource.InfoMessage("Checkpoint file read: {0}", checkpointFileData);
             return checkpointFileData;
@@ -420,7 +454,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             using (FileStream fs = File.Create(randomFilePath))
             {
-                string data = fileData.schedulingDateTime.ToString("yyyyMMddHHmmss") + " " + fileData.rescheduleCount + " "+ fileData.rescheduleNeeded;
+                string data = fileData.schedulingDateTime.ToString("yyyyMMddHHmmss") + " " + fileData.rescheduleCount + " "+ fileData.rescheduleNeeded + " "+ fileData.lastAttemptedUpdateTime;
                 Byte[] info = new System.Text.UTF8Encoding(true).GetBytes(data);
                 fs.Write(info, 0, info.Length);
             }
@@ -641,7 +675,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         {
             public DateTime schedulingDateTime = default(DateTime);
             public long rescheduleCount = 0;
-            public bool rescheduleNeeded = false;            
+            public bool rescheduleNeeded = false;
+            public DateTime lastAttemptedUpdateTime = default(DateTime);
 
             public override string ToString()
             {
