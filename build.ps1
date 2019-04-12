@@ -29,8 +29,10 @@ param
     [switch]$CreateNugetPackageOnly,
 
     # AppInsightsKey
-    [string]$AppInsightsKey = ""
+    [string]$AppInsightsKey = "",
 
+    # DelaySign
+    [bool]$DelaySign
 )
 
 $presentWorkingDirectory= Get-Location
@@ -139,6 +141,7 @@ if($CreateNugetPackageOnly)
         "/property:RequestedVerbosity=$verbosity",
         "/property:Configuration=$configuration",
         "/property:RestoreConfigFile=$nugetConfigFilePath",
+        "/property:DelaySign=$DelaySign",
         $args)
     & $msbuildFullPath $msbuildArgs
 }
@@ -171,7 +174,8 @@ else {
         "/property:Configuration=$configuration",
         "/property:RestoreConfigFile=$nugetConfigFilePath",
         "/property:AppInsightsKey=$AppInsightsKey",
-        "/p:RestorePackagesPath=$packagesDirectory",
+        "/property:RestorePackagesPath=$packagesDirectory",
+        "/property:DelaySign=$DelaySign",
         $args)
     & $msbuildFullPath $msbuildArgs
 }
