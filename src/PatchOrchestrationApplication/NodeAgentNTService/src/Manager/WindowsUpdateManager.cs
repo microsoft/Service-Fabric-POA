@@ -292,7 +292,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                                 break;
                             }
-                            string healthDescription = string.Format("Update Download started.");
+                            string healthDescription = string.Format("Windows update Download started.");
                             this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
@@ -329,7 +329,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     {
                         if(wuOperationState == NodeAgentSfUtilityExitCodes.DownloadCompleted)
                         {
-                            string healthDescriptionDownloadComplete = string.Format("Download completed waiting for approval. ");
+                            string healthDescriptionDownloadComplete = string.Format("Windows updates download, waiting for repair task to move to InstallationApproved state.");
                             this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescriptionDownloadComplete, HealthState.Ok);
                         }
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
@@ -340,7 +340,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             break;
                         }
 
-                        string healthDescription = string.Format("Installation in progress.");
+                        string healthDescription = string.Format("Windows update installation in progress.");
                         this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                         OperationResultCode searchResult = SearchUpdates(cancellationToken);

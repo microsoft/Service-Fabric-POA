@@ -496,7 +496,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(Uri applicationName, string nodeName,String healthProperty, String healthDescription, HealthState healthState,
     long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnDeployedServicePackage(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnDeployedServicePackage(this.fabricClient, applicationName, nodeName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
