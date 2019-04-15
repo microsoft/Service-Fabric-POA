@@ -452,7 +452,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 string data = fileData.schedulingDateTime.ToString("yyyyMMddHHmmss") + " " + fileData.rescheduleCount + " " + fileData.rescheduleNeeded;
                 if (!fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
                 {
-                     data += " " + fileData.lastAttemptedUpdateTime;
+                     data += " " + fileData.lastAttemptedUpdateTime.ToString("yyyyMMddHHmmss");
                 }
                 Byte[] info = new System.Text.UTF8Encoding(true).GetBytes(data);
                 fs.Write(info, 0, info.Length);
