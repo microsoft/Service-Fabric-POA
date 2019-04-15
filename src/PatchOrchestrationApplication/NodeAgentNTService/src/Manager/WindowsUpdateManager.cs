@@ -292,7 +292,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                                 break;
                             }
-                            string healthDescription = string.Format("Windows update Download started.");
+                            string healthDescription = string.Format("Windows update download started.");
                             this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
@@ -329,7 +329,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     {
                         if(wuOperationState == NodeAgentSfUtilityExitCodes.DownloadCompleted)
                         {
-                            string healthDescriptionDownloadComplete = string.Format("Windows updates download, waiting for repair task to move to InstallationApproved state.");
+                            string healthDescriptionDownloadComplete = string.Format("Windows updates downloaded, waiting for repair task to move to InstallationApproved state.");
                             this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescriptionDownloadComplete, HealthState.Ok);
                         }
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
