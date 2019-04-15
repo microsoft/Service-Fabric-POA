@@ -207,7 +207,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <returns>true if operation is success else false.</returns>
         public NodeAgentSfUtilityExitCodes ReportHealth(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
         {
-            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty, healthDescription, healthState, timeToLiveInMinutes, timeout);
+            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty + "-" + this._nodeName, healthDescription, healthState, timeToLiveInMinutes, timeout);
             string[] arguments = { "ReportHealth", this._applicationUri.ToString(), healthProperty + "-" + this._nodeName, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString()};
             ProcessExecutor processExecutor = new ProcessExecutor(SfUtilityFileName, CreateProcessArgument(arguments));
 
@@ -244,7 +244,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <returns>true if operation is success else false.</returns>
         public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
         {
-            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty, healthDescription, healthState, timeToLiveInMinutes, timeout);
+            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty + "-" + this._nodeName, healthDescription, healthState, timeToLiveInMinutes, timeout);
             string[] arguments = { "ReportWUStatusUpdateOnCoordinatorService", this._applicationUri.ToString(), healthProperty + "-"+ this._nodeName, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString() };
             ProcessExecutor processExecutor = new ProcessExecutor(SfUtilityFileName, CreateProcessArgument(arguments));
 
