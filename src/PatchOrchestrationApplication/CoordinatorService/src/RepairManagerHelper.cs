@@ -361,7 +361,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             {
                 processingNodesString = "None";
             }
-            string description = string.Format("ProcessingNodes :{0}, PendingNodes: {1}", pendingNodesString, processingNodesString);
+            string description = string.Format("ProcessingNodes :{0}, PendingNodes: {1}", processingNodesString, pendingNodesString);
             HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok);
         }
 

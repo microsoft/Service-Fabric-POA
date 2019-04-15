@@ -23,7 +23,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// Suffix name to be appended with ApplicationName
         /// </summary>
         private const string ServiceNameSuffix = "/NodeAgentService";
-        private const string ServicePackageName = "NodeAgentServicePkg";
+        private const string CoordinatorServiceSuffix = "/CoordinatorService";
 
         /// <summary>
         /// Posts a health report against Patch Orchestration Application's NodeAgentService
@@ -71,7 +71,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 
 
         /// <summary>
-        /// Posts a health report against Patch Orchestration Application's NodeAgentService
+        /// Utility to Report information logs of windows update on Coordinator Service.
         /// </summary>
         /// <param name="fabricClient">Fabric client object to carry out HM operations</param>
         /// <param name="applicationName">Name of the application to construct servicename</param>
@@ -79,7 +79,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReportOnDeployedServicePackage(FabricClient fabricClient,Uri applicationName, string nodeName, string healthReportProperty, string description,
+        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReportOnCoordinatorService(FabricClient fabricClient,Uri applicationName, string healthReportProperty, string description,
             HealthState healthState, long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
@@ -95,14 +95,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 
             try
             {
-                DeployedServicePackageHealthReport healthReport = new DeployedServicePackageHealthReport(new Uri(applicationName + ServiceNameSuffix), ServicePackageName, nodeName, healthInformation);
+                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + CoordinatorServiceSuffix), healthInformation);
                 fabricClient.HealthManager.ReportHealth(healthReport);
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)
             {
                 ServiceEventSource.Current.ErrorMessage(
-                    String.Format("HealthManagerHelper.PostNodeHealthReport failed. Exception details {0}", e));
+                    String.Format("HealthManagerHelper.PostServiceHealthReportOnCoordinatorService failed. Exception details {0}", e));
                 if (e is FabricTransientException)
                 {
                     return NodeAgentSfUtilityExitCodes.RetryableException;

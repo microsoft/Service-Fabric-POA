@@ -293,7 +293,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 break;
                             }
                             string healthDescription = string.Format("Windows update Download started.");
-                            this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);
@@ -330,7 +330,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         if(wuOperationState == NodeAgentSfUtilityExitCodes.DownloadCompleted)
                         {
                             string healthDescriptionDownloadComplete = string.Format("Windows updates download, waiting for repair task to move to InstallationApproved state.");
-                            this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescriptionDownloadComplete, HealthState.Ok);
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescriptionDownloadComplete, HealthState.Ok);
                         }
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                         if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
@@ -341,7 +341,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         }
 
                         string healthDescription = string.Format("Windows update installation in progress.");
-                        this._nodeAgentSfUtility.ReportHealthOnDeployedServicePackage(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
+                        this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescription, HealthState.Ok);
 
                         OperationResultCode searchResult = SearchUpdates(cancellationToken);
                         reschedule = (searchResult != OperationResultCode.orcSucceeded ? true : reschedule);

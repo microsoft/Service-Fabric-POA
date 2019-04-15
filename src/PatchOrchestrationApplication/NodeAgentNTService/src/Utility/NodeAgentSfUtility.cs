@@ -233,19 +233,19 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
 
 
         /// <summary>
-        /// Report health for the NodeAgentServicePackage.
-        /// If windows update operation is not successful after exhausting all reties, we'll post warning level health report
-        /// If windows update operation is successful we'll post Ok level health report.
+        /// Utility to Report information logs of windows update on NodeAgentService package on any node. Typical usecases are as below
+        /// 1. To show the last update attempted time and next update start time
+        /// 2. To show the sub-state of node when update is going on a node.
         /// </summary>
         /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
         /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
         /// <param name="healthState"><see cref="HealthState"/> indicating the severity of the health report, use <see cref="HealthState.Error"/> with caution</param>
         /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
         /// <returns>true if operation is success else false.</returns>
-        public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
+        public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
         {
             _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty, healthDescription, healthState, timeToLiveInMinutes, timeout);
-            string[] arguments = { "ReportHealthOnDeployedServicePackage", this._applicationUri.ToString(), this._nodeName, healthProperty, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString() };
+            string[] arguments = { "ReportWUStatusUpdateOnCoordinatorService", this._applicationUri.ToString(), healthProperty + "-"+ this._nodeName, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString() };
             ProcessExecutor processExecutor = new ProcessExecutor(SfUtilityFileName, CreateProcessArgument(arguments));
 
             long retries = 0;
@@ -347,7 +347,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
             return '"' + String.Join("\" \"", arguments) + '"';
         }
 
-        public NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(Uri applicationName, string nodeName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
+        public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(Uri applicationName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

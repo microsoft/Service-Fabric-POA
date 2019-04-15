@@ -192,9 +192,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         NodeAgentSfUtilityExitCodes ReportHealth(Uri applicationName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Report health for the NodeAgentService
-        /// If windows update operation is not successful after exhausting all reties, we'll post warning level health report
-        /// If windows update operation is successfull we'll post Ok level health report.
+        /// Utility to Report information logs of windows update on Coordinator Service.
+        /// 1. To show the last update attempted time and next update start time
+        /// 2. To show the sub-state of node when update is going on a node.
         /// </summary>
         /// <param name="applicationName">Name of application for constructing service name</param>
         /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
@@ -204,7 +204,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// <param name="timeout">Timeout for the async operation</param>
         /// <param name="cancellationToken">The cancellation token to cancel the async operation</param>
         /// <returns>Operation result in <see cref="NodeAgentSfUtilityExitCodes"/></returns>
-        NodeAgentSfUtilityExitCodes ReportHealthOnDeployedServicePackage(Uri applicationName, string nodeName,string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken);
+        NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(Uri applicationName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the application status of a deployed application
