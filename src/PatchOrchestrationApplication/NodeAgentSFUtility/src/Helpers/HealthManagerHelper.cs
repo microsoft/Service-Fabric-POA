@@ -52,7 +52,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             try
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
-                fabricClient.HealthManager.ReportHealth(healthReport);
                 Task.Delay(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
