@@ -115,7 +115,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     // This task will post updates of Repair tasks on the Coordinator Service.
                     await this.rmHelper.PostRMTaskUpdates(cancellationToken);
                     // Clears the orphan event posted on coordinator service.
-                    await this.rmHelper.ClearOrphanEvents(cancellationToken)
+                    await this.rmHelper.ClearOrphanEvents(cancellationToken);
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(this.pollingFrequencyInSec), cancellationToken);
