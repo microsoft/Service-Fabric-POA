@@ -52,6 +52,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             try
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
+                fabricClient.HealthManager.ReportHealth(healthReport);
+                Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)
@@ -97,6 +99,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + CoordinatorServiceSuffix), healthInformation);
                 fabricClient.HealthManager.ReportHealth(healthReport);
+                Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)
