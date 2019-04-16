@@ -35,6 +35,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         internal TaskApprovalPolicy RmPolicy = TaskApprovalPolicy.NodeWise;
         private const string RMTaskUpdateProperty = "RMTaskUpdate";
         private int postUpdateCount = 0;
+        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
 
         /// <summary>
         /// Default timeout for async operations
@@ -330,7 +331,52 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok, -1);
                 }
             }
-        } 
+        }
+        
+        private async Task ClearOrphanEvents(CancellationToken cancellationToken)
+        {
+            ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(this.context.ServiceName);
+            List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
+            foreach(var e in health.HealthEvents)
+            {
+                if(e.HealthInformation.Property.Contains(WUOperationStatusUpdate))
+                {
+                    healthEventsToCheck.Add(e);
+                }
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+            List<string> orphanProperties = new List<string>();
+            Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
+            if (healthEventsToCheck.Count == nodeList.Count)
+            {
+                return;
+            }
+            else
+            {
+                foreach(var node in nodeList)
+                {
+                    propertyDict.Add(WUOperationStatusUpdate + "-" + node.NodeName, true);
+                }
+                foreach(var e in healthEventsToCheck)
+                {
+                    if (!propertyDict.ContainsKey(e.HealthInformation.Property))
+                    {
+                        orphanProperties.Add(e.HealthInformation.Property);
+                    }
+                }
+
+                foreach(var property in orphanProperties)
+                {
+                    ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
+
+                    // I think we would need to change the expiry time to ~0
+                    string description = "This health event will be expired in 1 minute as node corresponding to this event is deleted.";
+                    HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
+                }
+            }
+        }
 
         private async Task PostRMTaskNodeUpdate(CancellationToken cancellationToken)
         {
