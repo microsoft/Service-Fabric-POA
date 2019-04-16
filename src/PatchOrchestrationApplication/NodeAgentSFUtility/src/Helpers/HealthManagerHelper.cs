@@ -6,6 +6,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
     using System;
     using System.Fabric;
     using System.Fabric.Health;
+    using System.Threading.Tasks;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
     using HealthState = System.Fabric.Health.HealthState;
 
@@ -52,6 +53,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
                 fabricClient.HealthManager.ReportHealth(healthReport);
+                Task.Delay(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)
