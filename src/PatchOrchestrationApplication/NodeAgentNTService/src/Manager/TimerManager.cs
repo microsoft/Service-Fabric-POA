@@ -85,7 +85,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private void PostWUUpdateEventOnServicePackage()
         {
             CheckpointFileData fileData = this.ReadCheckpointFile();
-            string formatString = "LastAttempteWUTime : {0}, NextUpdateDownloadTime : {1}";
+            string formatString = "LastAttemptedWUTime : {0}, NextUpdateDownloadTime : {1}";
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 string healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
