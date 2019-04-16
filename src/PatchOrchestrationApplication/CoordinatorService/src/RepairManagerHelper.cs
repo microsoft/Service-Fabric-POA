@@ -333,7 +333,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
         
-        private async Task ClearOrphanEvents(CancellationToken cancellationToken)
+        public async Task ClearOrphanEvents(CancellationToken cancellationToken)
         {
             ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(this.context.ServiceName);
             List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
