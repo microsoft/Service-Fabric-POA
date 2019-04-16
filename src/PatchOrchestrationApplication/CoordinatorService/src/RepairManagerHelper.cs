@@ -372,7 +372,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
 
                     // I think we would need to change the expiry time to ~0
-                    string description = "This health event will be expired in 1 minute as node corresponding to this event is deleted.";
+                    string description = "This health event will be expired in 1 seconds as node corresponding to this event is deleted.";
                     HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
                 }
             }
