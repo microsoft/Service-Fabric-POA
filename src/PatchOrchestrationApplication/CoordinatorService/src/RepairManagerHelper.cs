@@ -39,6 +39,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         /// <summary>
         /// Default timeout for async operations
+        /// Default timeout for async operations
         /// </summary>
         internal TimeSpan DefaultTimeoutForOperation = TimeSpan.FromMinutes(5);
 
@@ -280,101 +281,116 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         public async Task PostRMTaskUpdates(CancellationToken cancellationToken)
         {
-            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
-            IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
-            RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-            if (claimedTaskList.Any())
+            try
             {
-                if (!processingTaskList.Any())
+                NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+                IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
+                RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (claimedTaskList.Any())
                 {
-                    // This means that repair tasks are not getting approved.
-                    ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
-                    if (clusterHealth.AggregatedHealthState != HealthState.Ok)
+                    if (!processingTaskList.Any())
                     {
-                        // Reset Count
-                        postUpdateCount = 0;
-                        string warningDescription = "Cluster is unhealthy. Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
-                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                        // This means that repair tasks are not getting approved.
+                        ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
+                        if (clusterHealth.AggregatedHealthState != HealthState.Ok)
+                        {
+                            // Reset Count
+                            postUpdateCount = 0;
+                            string warningDescription = "Cluster is unhealthy. Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
+                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                        }
+                        else
+                        {
+                            postUpdateCount++;
+                            if (postUpdateCount > 60)
+                            {
+                                // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
+                                postUpdateCount = 0;
+                                string warningDescription = "POA repair tasks are not getting approved, So, update installation is halted. Please try to find out why is this blocked.";
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                            }
+                        }
                     }
                     else
                     {
-                        postUpdateCount++;
-                        if (postUpdateCount > 60)
-                        {
-                            // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
-                            postUpdateCount = 0;
-                            string warningDescription = "POA repair tasks are not getting approved, So, update installation is halted. Please try to find out why is this blocked.";
-                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
-                        }
+                        // Reset Count
+                        postUpdateCount = 0;
+                        await PostRMTaskNodeUpdate(cancellationToken);
                     }
                 }
                 else
                 {
                     // Reset Count
                     postUpdateCount = 0;
-                    await PostRMTaskNodeUpdate(cancellationToken);
+                    if (processingTaskList.Any())
+                    {
+                        await PostRMTaskNodeUpdate(cancellationToken);
+                    }
+                    else
+                    {
+                        // Post the health event saying that there is no repair task and things are working fine.
+                        string description = "No claimed tasks and no processing tasks are found.";
+                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok, -1);
+                    }
                 }
             }
-            else
+            catch(Exception ex)
             {
-                // Reset Count
-                postUpdateCount = 0;
-                if (processingTaskList.Any())
-                {
-                    await PostRMTaskNodeUpdate(cancellationToken);
-                }
-                else
-                {
-                    // Post the health event saying that there is no repair task and things are working fine.
-                    string description = "No claimed tasks and no processing tasks are found.";
-                    HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok, -1);
-                }
+                ServiceEventSource.Current.ErrorMessage("PostRMTaskUpdates failed with exception {0}", ex.ToString());
             }
+
         }
         
         public async Task ClearOrphanEvents(CancellationToken cancellationToken)
         {
-            ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(this.context.ServiceName);
-            List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
-            foreach(var e in health.HealthEvents)
+            try
             {
-                if(e.HealthInformation.Property.Contains(WUOperationStatusUpdate))
+                ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(this.context.ServiceName);
+                List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
+                foreach (var e in health.HealthEvents)
                 {
-                    healthEventsToCheck.Add(e);
-                }
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-
-            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
-            List<string> orphanProperties = new List<string>();
-            Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
-            if (healthEventsToCheck.Count == nodeList.Count)
-            {
-                return;
-            }
-            else
-            {
-                foreach(var node in nodeList)
-                {
-                    propertyDict.Add(WUOperationStatusUpdate + "-" + node.NodeName, true);
-                }
-                foreach(var e in healthEventsToCheck)
-                {
-                    if (!propertyDict.ContainsKey(e.HealthInformation.Property))
+                    if (e.HealthInformation.Property.Contains(WUOperationStatusUpdate))
                     {
-                        orphanProperties.Add(e.HealthInformation.Property);
+                        healthEventsToCheck.Add(e);
                     }
                 }
+                cancellationToken.ThrowIfCancellationRequested();
 
-                foreach(var property in orphanProperties)
+                NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+                List<string> orphanProperties = new List<string>();
+                Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
+                if (healthEventsToCheck.Count == nodeList.Count)
                 {
-                    ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
-
-                    // I think we would need to change the expiry time to ~0
-                    string description = "This health event will be expired in 1 seconds as node corresponding to this event is deleted.";
-                    HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
+                    return;
                 }
+                else
+                {
+                    foreach (var node in nodeList)
+                    {
+                        propertyDict.Add(WUOperationStatusUpdate + "-" + node.NodeName, true);
+                    }
+                    foreach (var e in healthEventsToCheck)
+                    {
+                        if (!propertyDict.ContainsKey(e.HealthInformation.Property))
+                        {
+                            orphanProperties.Add(e.HealthInformation.Property);
+                        }
+                    }
+
+                    foreach (var property in orphanProperties)
+                    {
+                        ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
+
+                        // I think we would need to change the expiry time to ~0
+                        string description = "This health event will be expired in 1 seconds as node corresponding to this event is deleted.";
+                        HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                ServiceEventSource.Current.ErrorMessage("ClearOrphanEvents failed with exception {0}", ex.ToString());
             }
         }
 
