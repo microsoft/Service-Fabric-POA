@@ -395,7 +395,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             if (!scheduleWindowsUpdatesFlag)
             {
                 // Do not update the last updateAttemptedTime.
-                this.CreateNewCheckpointFile();
+                this.CreateNewCheckpointFile(false);
                 _eventSource.InfoMessage("Loaded checkpoint file.");
             }
         }
