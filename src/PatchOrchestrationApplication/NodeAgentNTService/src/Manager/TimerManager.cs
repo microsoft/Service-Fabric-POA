@@ -333,7 +333,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         {
             CheckpointFileData checkpointFileData = new CheckpointFileData();
             checkpointFileData.schedulingDateTime = this.GetNextSchedulingTime();
-            if(!updateAttempted)
+            if(updateAttempted)
             {
                 checkpointFileData.lastAttemptedUpdateTime =  DateTime.UtcNow;
             }
