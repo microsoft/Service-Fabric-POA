@@ -293,8 +293,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         // This means that repair tasks are not getting approved.
                         ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
-                        if (clusterHealth.AggregatedHealthState != HealthState.Ok)
-                        {
+                        if (clusterHealth.AggregatedHealthState == HealthState.Error)
+                        { 
                             // Reset Count
                             postUpdateCount = 0;
                             string warningDescription = "Cluster is unhealthy. POA Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
@@ -342,6 +342,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         }
         
+
         public async Task ClearOrphanEvents(CancellationToken cancellationToken)
         {
             try
