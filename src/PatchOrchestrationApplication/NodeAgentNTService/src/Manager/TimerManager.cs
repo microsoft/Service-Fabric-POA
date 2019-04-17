@@ -431,7 +431,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 checkpointFileData.rescheduleNeeded = Boolean.Parse(arr[2]);
                 if(arr.Length == 4)
                 {
-                    checkpointFileData.lastAttemptedUpdateTime = DateTime.ParseExact(arr[0], "yyyyMMddHHmmss", null);
+                    checkpointFileData.lastAttemptedUpdateTime = DateTime.ParseExact(arr[3], "yyyyMMddHHmmss", null);
                 }
             }
             _eventSource.InfoMessage("Checkpoint file read: {0}", checkpointFileData);
