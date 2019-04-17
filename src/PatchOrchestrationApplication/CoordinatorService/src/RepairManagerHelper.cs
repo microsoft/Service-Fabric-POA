@@ -298,7 +298,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                             // Reset Count
                             postUpdateCount = 0;
                             string warningDescription = "Cluster is unhealthy. POA Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
-                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, 5);
+                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Ok, 5);
                         }
                         else
                         {
