@@ -397,50 +397,98 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 TimeSpan elapsedTime = DateTime.UtcNow.Subtract(task.ApprovedTimestamp.Value);
                 if (elapsedTime > (TimeSpan.FromMinutes(executorData.ExecutorTimeoutInMinutes) + GraceTimeForNtService))
                 {
+                    // Check if the node exists or not. If node does not exists, then don't break;
+                    bool nodeExists = false;
+                    string nodeName = this.GetNodeNameFromRepairTask(task);
+                    NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(nodeName, null, this.DefaultTimeoutForOperation, cancellationToken);
+                    foreach (var node in nodeList)
+                    {
+                        if (node.NodeName.Equals(nodeName))
+                        {
+                            // Node Exists.
+                            nodeExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!nodeExists)
+                    {
+                        // If node does not exist now, there is no point in waiting on the task.
+                        await UpdateRepairTaskState(task, nodeName, RepairTaskState.Completed, executorData.ExecutorTimeoutInMinutes, cancellationToken, nodeExists);
+                        continue;
+                    }
+
                     switch (executorData.ExecutorSubState)
                     {
                         // These are special states where its best if NodeAgentNtService should move the repair task, just post warning in this case
                         case NodeAgentSfUtilityExitCodes.RestartRequested:
                         case NodeAgentSfUtilityExitCodes.RestartCompleted:
                         case NodeAgentSfUtilityExitCodes.InstallationCompleted:
-                        {
-                            string nodeName = this.GetNodeNameFromRepairTask(task);
-                            string healthproperty = string.Format(
-                                NodeTimeoutStatusFormat,
-                                nodeName);
-                            string healthDescription =
-                                string.Format(
-                                    "Installation timeout {0} minutes alloted to repair task {1}, node {2} is over, however since node is in post-installation phase, wait for few more minutes for operation to complete"
-                                    + "In case problem persists, please check if recent installations of updates has caused any problem on the node",
-                                    executorData.ExecutorTimeoutInMinutes,
-                                    task.TaskId,
+                            {
+                                string healthproperty = string.Format(
+                                    NodeTimeoutStatusFormat,
                                     nodeName);
-                                ServiceEventSource.Current.ErrorMessage("Title = {0}, Description = {1}",healthproperty, healthDescription);
-                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient,
-                                this.context.ServiceName,
-                                healthproperty,
-                                healthDescription,
-                                HealthState.Warning,
-                                60);
-                            break;
-                        }
+                                string healthDescription =
+                                    string.Format(
+                                        "Installation timeout {0} minutes alloted to repair task {1}, node {2} is over, however since node is in post-installation phase, wait for few more minutes for operation to complete"
+                                        + "In case problem persists, please check if recent installations of updates has caused any problem on the node",
+                                        executorData.ExecutorTimeoutInMinutes,
+                                        task.TaskId,
+                                        nodeName);
+                                ServiceEventSource.Current.ErrorMessage("Title = {0}, Description = {1}", healthproperty, healthDescription);
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient,
+                                    this.context.ServiceName,
+                                    healthproperty,
+                                    healthDescription,
+                                    HealthState.Warning,
+                                    60);
+
+                                break;
+                            }
 
                         default:
-                        {
-                            string nodeName = this.GetNodeNameFromRepairTask(task);
-                            task.State = RepairTaskState.Restoring;
-                            task.ResultStatus = RepairTaskResult.Cancelled;
-                            ServiceEventSource.Current.ErrorMessage(
-                                "Installation timeout {0} minutes alloted to task {1}, node {2} is over. Moving the repair task to restoring state to unblock installation on other nodes",
-                                executorData.ExecutorTimeoutInMinutes,
-                                task.TaskId,
-                                nodeName);
-                            await this.fabricClient.RepairManager.UpdateRepairExecutionStateAsync(task, this.DefaultTimeoutForOperation, cancellationToken);
-                            break;
-                        }
+                            {
+                                await UpdateRepairTaskState(task, nodeName, RepairTaskState.Restoring, executorData.ExecutorTimeoutInMinutes, cancellationToken);
+                                break;
+                            }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates repair task based on its current state.
+        /// </summary>
+        /// <param name="task"><see cref="RepairTask"/> to be updated</param>
+        /// <param name="nodeName">Node name of the repair task.</param>
+        /// <param name="finalState">Required Final state of the repair task.</param>
+        /// <param name="executorTimeoutInMinutes">executorTimeoutInMinutes</param>
+        /// <param name="cancellationToken">CancellationToken</param>
+        /// <returns></returns>
+        private async Task UpdateRepairTaskState(RepairTask task, string nodeName, RepairTaskState finalState, int executorTimeoutInMinutes, CancellationToken cancellationToken, bool nodeExists = true)
+        {
+            task.State = finalState;
+            task.ResultStatus = RepairTaskResult.Cancelled;
+            if (nodeExists)
+            {
+                ServiceEventSource.Current.ErrorMessage(
+                "Installation timeout {0} minutes alloted to task {1}, node {2} is over. Moving the repair task to {3} state to unblock installation on other nodes",
+                executorTimeoutInMinutes,
+                task.TaskId,
+                nodeName,
+                finalState.ToString());
+            }
+            else
+            {
+                ServiceEventSource.Current.ErrorMessage(
+                "Installation timeout {0} minutes alloted to task {1} and node {2} does not exist in the cluster. So, Moving the repair task to {3} state ",
+                executorTimeoutInMinutes,
+                task.TaskId,
+                nodeName,
+                finalState.ToString());
+            }
+
+            await this.fabricClient.RepairManager.UpdateRepairExecutionStateAsync(task, this.DefaultTimeoutForOperation, cancellationToken);
         }
 
         /// <summary>
