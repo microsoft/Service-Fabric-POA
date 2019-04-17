@@ -297,8 +297,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         {
                             // Reset Count
                             postUpdateCount = 0;
-                            string warningDescription = "Cluster is unhealthy. Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
-                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                            string warningDescription = "Cluster is unhealthy. POA Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
+                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, 5);
                         }
                         else
                         {
@@ -307,8 +307,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                             {
                                 // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
                                 postUpdateCount = 0;
-                                string warningDescription = "POA repair tasks are not getting approved, So, update installation is halted. Please try to find out why is this blocked.";
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, -1);
+                                string warningDescription = "POA repair tasks are not getting approved. So, update installation is halted. Please try to find out why is this blocked.";
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, 90);
                             }
                         }
                     }

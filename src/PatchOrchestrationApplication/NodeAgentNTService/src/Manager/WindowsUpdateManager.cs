@@ -242,7 +242,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {
                 string exceptionDesc = String.Format(@"Not able to restart the system. Failed with exception : {0}\n", e);
                 _eventSource.ErrorMessage(exceptionDesc);
-                this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", exceptionDesc, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                 throw;
             }
         }
@@ -258,7 +257,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {
                 string exceptionDesc = String.Format("Not able to proceed with the Windows Update. Failed with exception : {0}", e);
                 _eventSource.ErrorMessage(exceptionDesc);
-                this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", exceptionDesc, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                 return true;
             }         
         }

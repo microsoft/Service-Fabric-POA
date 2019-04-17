@@ -183,12 +183,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                     result.OperationType == WindowsUpdateOperationType.SearchAndDownload ? "downloaded" : "installed",
                     result.OperationTime.ToString("dddd, dd MMMM yyyy"));
 
-                foreach (var update in result.UpdateDetails)
-                {
-                    message.AppendFormat("\nUpdateTitle : {0} , Result = {1}", update.Title, Enum.GetName(typeof(WuOperationResult), update.ResultCode));
-                }
-
-                message.AppendFormat("\nFor detailed results refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results");
+                message.AppendFormat("\nFor installation results refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results");
 
                 this.ReportHealth("WindowsUpdateStatus", message.ToString(), HealthState.Ok, -1,
                             TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));

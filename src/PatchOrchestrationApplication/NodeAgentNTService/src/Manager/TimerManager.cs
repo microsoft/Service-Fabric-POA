@@ -132,6 +132,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         auUtility.SetAUOptions();
                         _eventSource.InfoMessage("New AU registry values are {0}", auUtility.LogCurrentAUValues());
                     }
+                    string updateMsg = "Automatic Windows update disabled successfully.";
+                    this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     return;
                 }
                 catch (Exception e)
@@ -199,11 +201,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 if (exitCode == NodeAgentSfUtilityExitCodes.RestartRequested)
                 {                                              
                     _eventSource.ErrorMessage("Not able to restart system.");
-
-                    // when last time service was not able to restart the system, create health report and retry.
-                    this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", "Not able to restart system.",
-                        HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
-
+                    
                     //wait for sometime before retrying. This delay is recommended if posting health reports.
                     if (this._helper.WaitOnTask(Task.Delay(TimeSpan.FromMinutes(WaitTimeInMinutes)),
                         this._cancellationToken))
@@ -233,9 +231,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     // If total retries are exhausted, schedule the call back for next interval mentioned in Settings.xml.
                     if (this.IncrementRetryCount() == false)
                     {
-                        this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult",
-                            "Reschedule retries exhausted. Resetting the state machine.", HealthState.Warning, -1,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                         if (this._windowsUpdateManager.ResetStateMachine())
                         {
                             this.UpdateSettingsAndCreateCheckpoint();
@@ -275,7 +270,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         this.CreateNewCheckpointFile();
                         this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult",
                             "Able to update successfully", HealthState.Ok, 15,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));                        
+                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     }
 
                     this.ScheduleTimer();
