@@ -400,7 +400,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     // Check if the node exists or not. If node does not exists, then don't break;
                     bool nodeExists = false;
                     string nodeName = this.GetNodeNameFromRepairTask(task);
-                    NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+                    NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(nodeName, null, this.DefaultTimeoutForOperation, cancellationToken);
                     foreach (var node in nodeList)
                     {
                         if (node.NodeName.Equals(nodeName))
