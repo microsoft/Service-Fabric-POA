@@ -49,7 +49,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// </summary>
         [DataMember]
         public WuOperationResult ResultCode;
-        
+
+        /// <summary>
+        /// HResult of the Windows update operation result
+        /// </summary>
+        [DataMember]
+        public int HResult;
+
+
         /// <summary>
         /// Verbose description of <see cref="WindowsUpdateDetail"/>.
         /// </summary>

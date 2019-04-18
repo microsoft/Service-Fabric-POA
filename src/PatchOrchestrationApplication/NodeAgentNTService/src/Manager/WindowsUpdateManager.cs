@@ -507,6 +507,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     var hResult = uResult.GetUpdateResult(i).HResult;
                     var updateID = updatesToInstall[i].Identity.UpdateID;
                     this._wuCollectionWrapper.Collection[updateID].IsInstalled = (hResult == 0);
+                    this._wuCollectionWrapper.Collection[updateID].HResult = hResult;
                     if (hResult != 0)
                     {
                         _eventSource.WarningMessage(string.Format("Install for update ID {0} returned hResult {1}", updateID, hResult));
@@ -644,6 +645,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     var hResult = uResult.GetUpdateResult(i).HResult;
                     var updateID = updatesToDownload[i].Identity.UpdateID;
                     this._wuCollectionWrapper.Collection[updateID].IsDownloaded = (hResult == 0);
+                    this._wuCollectionWrapper.Collection[updateID].HResult = hResult;
                     if (hResult != 0)
                     {
                         _eventSource.WarningMessage(string.Format("Download for update ID {0} returned hResult {1}", updateID, hResult));

@@ -17,8 +17,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include= "Newtonsoft.Json" Version = "10.0.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.7"  />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.7" />
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -51,6 +51,7 @@
     <Compile Include="Service\ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Utility\OperationResultAndHResult.cs" />
     <Compile Include="Utility\OperationResultFormatter.cs" />
     <Compile Include="Utility\Helper.cs" />
     <Compile Include="Utility\ShutdownUtility.cs" />

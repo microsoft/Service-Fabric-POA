@@ -79,7 +79,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                         ? item.IsInstalled
                         : item.IsDownloaded;
 
-                    updateDetail.ResultCode = MatchOperationResult(operation);                    
+                    updateDetail.ResultCode = MatchOperationResult(operation);
+                    updateDetail.HResult = item.HResult;
 
                     details.Add(updateDetail);
 
@@ -146,6 +147,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         public IUpdate2 Update { get; private set; }
         public bool IsDownloaded { get; set; }
         public bool IsInstalled { get; set; }
+        public int HResult { get; set; } = 0;// Should be set in a way that it is null also.
 
         public WUUpdateWrapper(IUpdate2 update, bool isDownloaded, bool isInstalled)
         {
