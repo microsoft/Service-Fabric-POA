@@ -118,7 +118,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 
         internal static async Task<bool> CheckIfServiceIsUp(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix)
         {
-            ServiceList list = await fabricClient.QueryManager.GetServiceListAsync(applicationName));
+            ServiceList list = await fabricClient.QueryManager.GetServiceListAsync(applicationName);
             Uri serviceUri = new Uri(applicationName + serviceNameSuffix);
             foreach (var s in list)
             {
