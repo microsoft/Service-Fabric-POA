@@ -113,7 +113,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     // Cleanup the ResultStore in case it exceeds the quota
                     await this.CleanupWuOperationResult(cancellationToken);
                     // This task will post updates of Repair tasks on the Coordinator Service.
-                    await this.rmHelper.PostRMTaskUpdates(cancellationToken);
+                    await this.rmHelper.PostClusterPatchingStatus(cancellationToken);
                     // Clears the orphan event posted on coordinator service.
                     await this.rmHelper.ClearOrphanEvents(cancellationToken);
                 }

@@ -14,7 +14,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
     using System.Diagnostics;
     using System.Threading;
-
+    using System.Xml;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
 
     using HealthState = System.Fabric.Health.HealthState;
@@ -33,7 +33,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string RepairManagerStatus = "RepairManager status";
         private const string NodeTimeoutStatusFormat = "Node : {0} exceeding installation timeout";
         internal TaskApprovalPolicy RmPolicy = TaskApprovalPolicy.NodeWise;
-        private const string RMTaskUpdateProperty = "RMTaskUpdate";
+        private const string ClusterPatchingStatusProperty = "ClusterPatchingStatus";
         private int postUpdateCount = 0;
         private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
 
@@ -279,7 +279,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
-        public async Task PostRMTaskUpdates(CancellationToken cancellationToken)
+        public async Task PostClusterPatchingStatus(CancellationToken cancellationToken)
         {
             try
             {
@@ -297,8 +297,15 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         { 
                             // Reset Count
                             postUpdateCount = 0;
-                            string warningDescription = "Cluster is unhealthy. POA Repair task created for OS update will not be approved. Please take cluster to healthy state for POA to start working.";
-                            HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Ok, 5);
+                            string warningDescription = " Cluster is currently unhealthy. Nodes are currently not getting patched by Patch Orchestration Application. Please ensure the cluster becomes healthy for patching to continue.";
+                            if (await ConsiderWarningAsErrorIsTrue())
+                            {
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Ok, 2);
+                            }
+                            else
+                            {
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, 2);
+                            }
                         }
                         else
                         {
@@ -307,8 +314,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                             {
                                 // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
                                 postUpdateCount = 0;
-                                string warningDescription = "POA repair tasks are not getting approved. So, update installation is halted. Please try to find out why is this blocked.";
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, warningDescription, HealthState.Warning, 90);
+                                string warningDescription = "Patch Orchestration Application is currently not patching nodes. This could be possible if there is some node which is stuck in disabling state for long time.";
+                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, 90);
                             }
                         }
                     }
@@ -331,17 +338,40 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         // Post the health event saying that there is no repair task and things are working fine.
                         string description = "No claimed tasks and no processing tasks are found.";
-                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok, -1);
+                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok, -1);
                     }
                 }
             }
             catch(Exception ex)
             {
-                ServiceEventSource.Current.ErrorMessage("PostRMTaskUpdates failed with exception {0}", ex.ToString());
+                ServiceEventSource.Current.ErrorMessage("PostClusterPatchingStatus failed with exception {0}", ex.ToString());
             }
 
         }
-        
+
+        internal async Task<bool> ConsiderWarningAsErrorIsTrue()
+        {
+            string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
+            XmlDocument clusterManifest = new XmlDocument();
+            string val = GetParamValueFromSection(clusterManifest, "HealthManager/ClusterHealthPolicy", "ConsiderWarningAsError");
+            bool flag;
+            if(Boolean.TryParse(val,out flag))
+            {
+                return flag;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public string GetParamValueFromSection(XmlDocument doc, string sectionName, string parameterName)
+        {
+            XmlNode sectionNode = doc.DocumentElement?.SelectSingleNode("//*[local-name()='Section' and @Name='" + sectionName + "']");
+            XmlNode parameterNode = sectionNode?.SelectSingleNode("//*[local-name()='Parameter' and @Name='" + parameterName + "']");
+            XmlAttribute attr = parameterNode?.Attributes?["Value"];
+            return attr?.Value;
+        }
 
         public async Task ClearOrphanEvents(CancellationToken cancellationToken)
         {
@@ -426,7 +456,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
 
             string description = string.Format("ProcessingNodes :{0}, PendingNodes: {1}", processingNodesString, pendingNodesString);
-            HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, RMTaskUpdateProperty, description, HealthState.Ok);
+            HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok);
         }
 
         /// <summary>
