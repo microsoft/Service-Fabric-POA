@@ -21,7 +21,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <PackageReference Include="Microsoft.ServiceFabric" Version="5.4.145" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="6.4.654" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper\CustomerIdentificationUtility.cs" />

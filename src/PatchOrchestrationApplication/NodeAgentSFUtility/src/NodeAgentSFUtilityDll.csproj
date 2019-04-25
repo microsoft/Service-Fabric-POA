@@ -17,9 +17,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Runtime.Serialization" />
-    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "2.4.145"/>
-    <PackageReference Include="Microsoft.ServiceFabric" Version = "5.4.145"/>
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "2.4.145"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version = "3.3.654"/>
+    <PackageReference Include="Microsoft.ServiceFabric" Version = "6.4.654"/>
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version = "3.3.654"/>
     <PackageReference Include="Newtonsoft.Json" Version = "10.0.2"/>
   </ItemGroup>
   <ItemGroup>
