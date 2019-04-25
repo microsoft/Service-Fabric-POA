@@ -13,6 +13,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
+    using Microsoft.ServiceFabric.Services.Remoting.Runtime;
     using System.Fabric.Description;
     using System.Linq;
 
