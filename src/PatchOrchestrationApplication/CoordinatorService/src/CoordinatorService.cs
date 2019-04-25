@@ -19,7 +19,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
     using TelemetryLib;
 
     using WebService;
-    using Services.Remoting.Runtime;
 
     /// <summary>
     /// An instance of this class is created for each service replica by the Service Fabric runtime.
