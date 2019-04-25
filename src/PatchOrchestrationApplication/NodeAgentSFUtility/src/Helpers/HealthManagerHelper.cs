@@ -66,10 +66,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                         return false;
                     }
                 };
-
+                HealthReportSendOptions sendOptions = new HealthReportSendOptions();
+                sendOptions.Immediate = true;
                 TimeoutProcessWithRetry(() =>
                 {
-                    fabricClient.HealthManager.ReportHealth(healthReport);
+                    fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
                 }, condition,
                 ServiceNameSuffix, timeout
                 );
@@ -170,9 +171,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                     }
                 };
 
+                HealthReportSendOptions sendOptions = new HealthReportSendOptions();
+                sendOptions.Immediate = true;
                 TimeoutProcessWithRetry(() =>
                 {
-                    fabricClient.HealthManager.ReportHealth(healthReport);
+                    fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
                 }, condition,
                 CoordinatorServiceSuffix, timeout
                 );

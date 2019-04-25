@@ -17,7 +17,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
                 Console.WriteLine(message);
                 ServiceEventSource.Current.InfoMessage(message);
                 FabricClientSettings settings = new FabricClientSettings();
-                settings.HealthReportSendInterval = TimeSpan.Zero;
                 FabricClient fabricClient = new FabricClient(settings);
                 CommandProcessor commandProcessor = new CommandProcessor(fabricClient, ServiceEventSource.Current);
                 var task = commandProcessor.ProcessArguments(args);
