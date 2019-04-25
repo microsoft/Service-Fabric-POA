@@ -4,6 +4,7 @@
 using Microsoft.ServiceFabric.PatchOrchestration.Common;
 using System;
 using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Remoting;
 
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
