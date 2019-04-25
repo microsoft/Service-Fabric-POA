@@ -101,7 +101,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             int count = 0;
-            while(stopwatch.Elapsed > timeout)
+            while(stopwatch.Elapsed < timeout)
             {
                 if(condition(s))
                 {
