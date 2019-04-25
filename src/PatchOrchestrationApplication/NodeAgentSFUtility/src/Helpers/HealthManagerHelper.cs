@@ -80,7 +80,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             catch (Exception e)
             {
                 ServiceEventSource.Current.ErrorMessage(
-                    String.Format("HealthManagerHelper.PostNodeHealthReport failed. Exception details {0}", e));
+                    String.Format("HealthManagerHelper.PostNodeHealthReport for Service {0} failed. Exception details {1}", serviceNameSuffix, e));
                 if (e is FabricTransientException)
                 {
                     return NodeAgentSfUtilityExitCodes.RetryableException;
