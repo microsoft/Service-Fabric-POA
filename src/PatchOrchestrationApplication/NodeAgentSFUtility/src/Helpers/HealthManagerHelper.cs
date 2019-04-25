@@ -4,8 +4,11 @@
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 {
     using System;
+    using System.Diagnostics;
     using System.Fabric;
     using System.Fabric.Health;
+    using System.Fabric.Query;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
     using HealthState = System.Fabric.Health.HealthState;
@@ -36,7 +39,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
         internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string healthReportProperty, string description,
-            HealthState healthState, long timeToLiveInMinutes = -1)
+            HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
                 healthState)
@@ -52,7 +55,25 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             try
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
-                fabricClient.HealthManager.ReportHealth(healthReport);
+                Func<string, bool> condition = (s) => {
+                    bool serviceExists = CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
+                    if (serviceExists)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+
+                TimeoutProcessWithRetry(() =>
+                {
+                    fabricClient.HealthManager.ReportHealth(healthReport);
+                }, condition,
+                ServiceNameSuffix, timeout
+                );
+
                 Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
@@ -64,12 +85,51 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                 {
                     return NodeAgentSfUtilityExitCodes.RetryableException;
                 }
+                else if(e is TimeoutException)
+                {
+                    return NodeAgentSfUtilityExitCodes.TimeoutException;
+                }
                 else
                 {
                     return NodeAgentSfUtilityExitCodes.Failure;
                 }
             }
         }
+
+        internal static void TimeoutProcessWithRetry(Action process, Func<string, bool> condition, string s, TimeSpan timeout)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            int count = 0;
+            while(stopwatch.Elapsed > timeout)
+            {
+                if(condition(s))
+                {
+                    process();
+                    return;
+                }
+                count++;
+                Thread.Sleep(TimeSpan.FromSeconds(1 * count));
+            }
+            stopwatch.Reset();
+            throw new TimeoutException(string.Format("Timeout occurred while trying to run the process {0}", process.GetType().Name.ToString()));
+        }
+
+
+        internal static async Task<bool> CheckIfServiceIsUp(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix)
+        {
+            ServiceList list = await fabricClient.QueryManager.GetServiceListAsync(applicationName));
+            Uri serviceUri = new Uri(applicationName + serviceNameSuffix);
+            foreach (var s in list)
+            {
+                if (s.ServiceName == serviceUri)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
 
 
         /// <summary>
@@ -81,8 +141,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReportOnCoordinatorService(FabricClient fabricClient,Uri applicationName, string healthReportProperty, string description,
-            HealthState healthState, long timeToLiveInMinutes = -1)
+        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReportOnCoordinatorService(FabricClient fabricClient, Uri applicationName, string healthReportProperty, string description,
+            HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
                 healthState)
@@ -98,8 +158,25 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             try
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + CoordinatorServiceSuffix), healthInformation);
-                fabricClient.HealthManager.ReportHealth(healthReport);
-                Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+                Func<string, bool> condition = (s) => {
+                    bool serviceExists = CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
+                    if (serviceExists)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+
+                TimeoutProcessWithRetry(() =>
+                {
+                    fabricClient.HealthManager.ReportHealth(healthReport);
+                }, condition,
+                CoordinatorServiceSuffix, timeout
+                );
+
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)

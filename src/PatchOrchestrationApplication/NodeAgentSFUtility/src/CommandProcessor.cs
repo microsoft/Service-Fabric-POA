@@ -472,12 +472,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportHealth(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
             long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
 
-
+    
 
         /// <summary>
         /// Utility to Report information logs of windows update on Coordinator Service. Typical usecases are as below
@@ -495,7 +495,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
     long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnCoordinatorService(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnCoordinatorService(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
