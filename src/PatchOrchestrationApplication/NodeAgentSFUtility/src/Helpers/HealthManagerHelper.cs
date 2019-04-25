@@ -26,19 +26,18 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <summary>
         /// Suffix name to be appended with ApplicationName
         /// </summary>
-        private const string ServiceNameSuffix = "/NodeAgentService";
-        private const string CoordinatorServiceSuffix = "/CoordinatorService";
 
         /// <summary>
         /// Posts a health report against Patch Orchestration Application's NodeAgentService
         /// </summary>
         /// <param name="fabricClient">Fabric client object to carry out HM operations</param>
         /// <param name="applicationName">Name of the application to construct servicename</param>
+        /// <param name="serviceNameSuffix">serviceNameSuffix of the service to construct servicename</param>
         /// <param name="healthReportProperty">Property of the health report</param>
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string healthReportProperty, string description,
+        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix, string healthReportProperty, string description,
             HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
@@ -54,7 +53,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 
             try
             {
-                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
+                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + serviceNameSuffix), healthInformation);
                 Func<string, bool> condition = (s) => {
                     bool serviceExists = CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
                     if (serviceExists)
@@ -72,7 +71,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                 {
                     fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
                 }, condition,
-                ServiceNameSuffix, timeout
+                serviceNameSuffix, timeout
                 );
 
                 Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
@@ -129,72 +128,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                 }
             }
             return false;
-        }
-
-
-
-        /// <summary>
-        /// Utility to Report information logs of windows update on Coordinator Service.
-        /// </summary>
-        /// <param name="fabricClient">Fabric client object to carry out HM operations</param>
-        /// <param name="applicationName">Name of the application to construct servicename</param>
-        /// <param name="healthReportProperty">Property of the health report</param>
-        /// <param name="description">Description of the health report</param>
-        /// <param name="healthState">HealthState for the health report</param>
-        /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReportOnCoordinatorService(FabricClient fabricClient, Uri applicationName, string healthReportProperty, string description,
-            HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
-        {
-            HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
-                healthState)
-            {
-                RemoveWhenExpired = true,
-                Description = description
-            };
-            if (timeToLiveInMinutes >= 0)
-            {
-                healthInformation.TimeToLive = TimeSpan.FromMinutes(timeToLiveInMinutes);
-            }
-
-            try
-            {
-                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + CoordinatorServiceSuffix), healthInformation);
-                Func<string, bool> condition = (s) => {
-                    bool serviceExists = CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
-                    if (serviceExists)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-
-                HealthReportSendOptions sendOptions = new HealthReportSendOptions();
-                sendOptions.Immediate = true;
-                TimeoutProcessWithRetry(() =>
-                {
-                    fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
-                }, condition,
-                CoordinatorServiceSuffix, timeout
-                );
-
-                return NodeAgentSfUtilityExitCodes.Success;
-            }
-            catch (Exception e)
-            {
-                ServiceEventSource.Current.ErrorMessage(
-                    String.Format("HealthManagerHelper.PostServiceHealthReportOnCoordinatorService failed. Exception details {0}", e));
-                if (e is FabricTransientException)
-                {
-                    return NodeAgentSfUtilityExitCodes.RetryableException;
-                }
-                else
-                {
-                    return NodeAgentSfUtilityExitCodes.Failure;
-                }
-            }
         }
     }
 }

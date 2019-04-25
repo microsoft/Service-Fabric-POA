@@ -27,6 +27,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         private readonly CancellationTokenSource cancellationTokenSource;
 
         private const string ExecutorDataForNtServiceFileName = "ExecutorDataForNtService.txt";
+        private const string ServiceNameSuffix = "/NodeAgentService";
+        private const string CoordinatorServiceSuffix = "/CoordinatorService";
 
         /// <summary>
         /// Constructor for Command Processor
@@ -472,7 +474,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportHealth(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
             long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, ServiceNameSuffix, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
@@ -495,7 +497,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
     long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReportOnCoordinatorService(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, CoordinatorServiceSuffix, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
