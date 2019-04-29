@@ -416,7 +416,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, WUDownloadComplete, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                         }
 
-
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                         if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
                         {
