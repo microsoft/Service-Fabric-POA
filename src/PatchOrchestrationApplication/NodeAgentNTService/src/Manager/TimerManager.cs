@@ -82,6 +82,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
         }
 
+        /// <summary>
+        /// This will post an event containing the information about patching on CoordinatorService.
+        /// </summary>
         private void PostWUUpdateEventOnServicePackage()
         {
             CheckpointFileData fileData = this.ReadCheckpointFile();

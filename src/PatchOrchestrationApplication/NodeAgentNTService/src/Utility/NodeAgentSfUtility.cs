@@ -236,6 +236,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
         /// <param name="healthState"><see cref="HealthState"/> indicating the severity of the health report, use <see cref="HealthState.Error"/> with caution</param>
         /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
+        /// <param name="timeout">It represents the operation timeout configured.</param>
         /// <returns>true if operation is success else false.</returns>
         public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
         {
@@ -260,7 +261,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                 retries++;
             }
 
-            throw new Exception("Not able to report health.");
+            throw new Exception("Not able to report health event on Coordinator service.");
         }
 
         public bool GetApplicationDeployedStatus(TimeSpan timeout)

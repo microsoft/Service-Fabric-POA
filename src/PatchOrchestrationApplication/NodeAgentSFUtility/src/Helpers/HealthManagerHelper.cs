@@ -37,6 +37,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
+        /// <param name="timeout">Configured timeout for this operation.</param>
         internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix, string healthReportProperty, string description,
             HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
         {
@@ -96,6 +97,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             }
         }
 
+        /// <summary>
+        /// Retry utility to check for a condition to run the function specified in params.
+        /// </summary>
+        /// <param name="condition">Condition to check before running the function passed./</param>
+        /// <param name="process">function to run if condition passes within configured timeout.</param>
+        /// <param name="timeout">Timeout configured for this operation.</param>
         internal static void TimeoutProcessWithRetry(Action process, Func<string, bool> condition, string s, TimeSpan timeout)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -115,7 +122,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             throw new TimeoutException(string.Format("Timeout occurred while trying to run the process {0}", process.GetType().Name.ToString()));
         }
 
-
+        /// <summary>
+        /// This method checks if the service with specified suffix is up or not.
+        /// </summary>
+        /// <param name="fabricClient">Fabric client./</param>
+        /// <param name="applicationName">Application name of the service</param>
+        /// <param name="timeout">Suffix of the service to check.</param>
         internal static async Task<bool> CheckIfServiceIsUp(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix)
         {
             ServiceList list = await fabricClient.QueryManager.GetServiceListAsync(applicationName);

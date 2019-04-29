@@ -279,6 +279,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+
+        /// <summary>
+        /// Post the cluster patching status as events on CoordinatorService
+        /// </summary>
         public async Task PostClusterPatchingStatus(CancellationToken cancellationToken)
         {
             try
@@ -342,6 +346,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         }
 
+        /// <summary>
+        /// Post warning on cluster depending upon how ConsiderWarningAsError bool is set in cluster manifest.
+        /// </summary>
         internal async Task PostWarningOnCoordinatorService(string warningDescription, int timeToLiveInMinutes)
         {
             bool considerWarningAsError = await ConsiderWarningAsErrorIsTrue();
@@ -355,6 +362,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+        /// <summary>
+        /// Utility to find out ConsiderWarningAsError in Cluster manifest.
+        /// </summary>
         private async Task<bool> ConsiderWarningAsErrorIsTrue()
         {
             string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
@@ -371,6 +381,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+        /// <summary>
+        /// Utility to parse cluster manifest.
+        /// </summary>
+        /// <sectionName>Name of the sectionName to search.</sectionName>
+        /// <parameterName>Name of the parameter to search.</parameterName>
+        /// <return>the value of parameter</return>
         public string GetParamValueFromSection(XmlDocument doc, string sectionName, string parameterName)
         {
             XmlNode sectionNode = doc.DocumentElement?.SelectSingleNode("//*[local-name()='Section' and @Name='" + sectionName + "']");
@@ -379,6 +395,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             return attr?.Value;
         }
 
+        /// <summary>
+        /// Used to clear the events on Coordinator Service for nodes which are deleted from cluster.
+        /// </summary>
         public async Task ClearOrphanEvents(CancellationToken cancellationToken)
         {
             try
@@ -420,7 +439,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
 
                         // I think we would need to change the expiry time to ~0
-                        string description = "This health event will be expired in 1 seconds as node corresponding to this event is deleted.";
+                        string description = "This health event will be expired in 1 minute as node corresponding to this event is deleted.";
                         HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
                     }
                 }
@@ -431,6 +450,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+        /// <summary>
+        /// Posts the cluster patching status by finding the nodes on which patching is going on.
+        /// </summary>
         private async Task PostRMTaskNodeUpdate(CancellationToken cancellationToken)
         {
             NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
