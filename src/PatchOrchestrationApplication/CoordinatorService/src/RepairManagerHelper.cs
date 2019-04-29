@@ -298,14 +298,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                             // Reset Count
                             postUpdateCount = 0;
                             string warningDescription = " Cluster is currently unhealthy. Nodes are currently not getting patched by Patch Orchestration Application. Please ensure the cluster becomes healthy for patching to continue.";
-                            if (await ConsiderWarningAsErrorIsTrue())
-                            {
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Ok, 2);
-                            }
-                            else
-                            {
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, 2);
-                            }
+                            await PostWarningOnCoordinatorService(warningDescription, 1);
                         }
                         else
                         {
@@ -315,7 +308,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                                 // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
                                 postUpdateCount = 0;
                                 string warningDescription = "Patch Orchestration Application is currently not patching nodes. This could be possible if there is some node which is stuck in disabling state for long time.";
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, 90);
+                                await PostWarningOnCoordinatorService(warningDescription, 61);
                             }
                         }
                     }
@@ -349,7 +342,20 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         }
 
-        internal async Task<bool> ConsiderWarningAsErrorIsTrue()
+        internal async Task PostWarningOnCoordinatorService(string warningDescription, int timeToLiveInMinutes)
+        {
+            bool considerWarningAsError = await ConsiderWarningAsErrorIsTrue();
+            if (considerWarningAsError)
+            {
+                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Ok, timeToLiveInMinutes);
+            }
+            else
+            {
+                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, timeToLiveInMinutes);
+            }
+        }
+
+        private async Task<bool> ConsiderWarningAsErrorIsTrue()
         {
             string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
             XmlDocument clusterManifest = new XmlDocument();
