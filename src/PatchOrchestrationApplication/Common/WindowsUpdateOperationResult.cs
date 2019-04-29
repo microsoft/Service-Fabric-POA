@@ -87,7 +87,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
     [DataContract]
     public class WindowsUpdateOperationResult
     {
-        public WindowsUpdateOperationResult(String nodeName, DateTime operationTime, WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired)
+        public WindowsUpdateOperationResult(String nodeName, DateTime operationTime, WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired, DateTime operationStartTime)
         {
             this.NodeName = nodeName;
             this.OperationTime = operationTime;
@@ -97,6 +97,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
             this.WindowsUpdateFrequency = windowsUpdateFrequency;
             this.WindowsUpdateQuery = windowsUpdateQuery;
             this.RebootRequired = rebootRequired;
+            this.OperationStartTime = OperationStartTime;
         }
 
         [DataMember]
@@ -107,6 +108,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
 
         [DataMember]
         public DateTime OperationTime { get; private set; }
+
+        [DataMember]
+        public DateTime OperationStartTime { get; private set; }
 
         [DataMember]
         public IList<WindowsUpdateDetail> UpdateDetails { get; private set; }

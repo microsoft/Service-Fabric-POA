@@ -29,26 +29,27 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <param name="operationResultCode">Operation result code</param>
         /// <param name="updateCollectionWrapper">Collection from which the formatted result will be created.</param>
         /// <returns></returns>
-        public WindowsUpdateOperationResult FormatSearchAndDownloadResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper)
+        public WindowsUpdateOperationResult FormatSearchAndDownloadResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper, DateTime operationStartTime)
         {
-            return FormatOperationResult(operationResultCode, updateCollectionWrapper, WindowsUpdateOperationType.SearchAndDownload, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency);
+            return FormatOperationResult(operationResultCode, updateCollectionWrapper, WindowsUpdateOperationType.SearchAndDownload, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency, operationStartTime);
         }
 
         /// <summary>
         /// Create Dummy Operation Result. This result is used when search is completed with zero result.
         /// </summary>        
         /// <returns></returns>
-        public WindowsUpdateOperationResult CreateInstallationDummyResult(){
-            return FormatOperationResult(OperationResultCode.orcSucceeded, null, WindowsUpdateOperationType.Installation, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency);
+        public WindowsUpdateOperationResult CreateInstallationDummyResult(DateTime operationStartTime)
+        {
+            return FormatOperationResult(OperationResultCode.orcSucceeded, null, WindowsUpdateOperationType.Installation, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency, operationStartTime);
         }
 
         /// <summary>
         /// Create Dummy Operation Result. This result is used when search is completed with zero result.
         /// </summary>        
         /// <returns></returns>
-        public WindowsUpdateOperationResult CreateSearchAndDownloadDummyResult()
+        public WindowsUpdateOperationResult CreateSearchAndDownloadDummyResult(DateTime operationStartTime)
         {
-            return FormatOperationResult(OperationResultCode.orcSucceeded, null, WindowsUpdateOperationType.SearchAndDownload, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency);
+            return FormatOperationResult(OperationResultCode.orcSucceeded, null, WindowsUpdateOperationType.SearchAndDownload, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency, operationStartTime);
         }
 
         /// <summary>
@@ -58,12 +59,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <param name="updateCollectionWrapper">Collection from which the formatted result will be created.</param>
         /// <returns></returns>
 
-        public WindowsUpdateOperationResult FormatInstallationResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper)
+        public WindowsUpdateOperationResult FormatInstallationResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper, DateTime operationStartTime)
         {
-            return FormatOperationResult(operationResultCode, updateCollectionWrapper, WindowsUpdateOperationType.Installation, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency);
+            return FormatOperationResult(operationResultCode, updateCollectionWrapper, WindowsUpdateOperationType.Installation, this._serviceSettings.WUQuery, this._serviceSettings.WUFrequency, operationStartTime);
         }
 
-        private WindowsUpdateOperationResult FormatOperationResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper, WindowsUpdateOperationType operationType, string wuQuery, string wuFrequency)
+        private WindowsUpdateOperationResult FormatOperationResult(OperationResultCode operationResultCode, WUCollectionWrapper updateCollectionWrapper, WindowsUpdateOperationType operationType, string wuQuery, string wuFrequency, DateTime operationStartTime)
         {
             bool rebootRequired = false;
             IList<WindowsUpdateDetail> details = new List<WindowsUpdateDetail>();
@@ -87,7 +88,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                     rebootRequired = !rebootRequired ? item.Update.RebootRequired : rebootRequired;
                 }
             }
-            return new WindowsUpdateOperationResult(this._nodeName, DateTime.UtcNow, MatchOperationResult(operationResultCode), details, operationType, wuQuery, wuFrequency, rebootRequired);
+            return new WindowsUpdateOperationResult(this._nodeName, DateTime.UtcNow, MatchOperationResult(operationResultCode), details, operationType, wuQuery, wuFrequency, rebootRequired, operationStartTime);
         }
 
         private WuOperationResult MatchOperationResult(OperationResultCode operationResultCode)
