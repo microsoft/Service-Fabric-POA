@@ -51,7 +51,6 @@
     <Compile Include="Service\ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Utility\OperationResultAndHResult.cs" />
     <Compile Include="Utility\OperationResultFormatter.cs" />
     <Compile Include="Utility\Helper.cs" />
     <Compile Include="Utility\ShutdownUtility.cs" />
