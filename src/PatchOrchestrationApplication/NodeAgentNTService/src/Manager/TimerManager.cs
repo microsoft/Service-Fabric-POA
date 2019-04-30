@@ -329,7 +329,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
         private void CreateNewCheckpointFile(bool updateAttempted = true)
         {
-            CheckpointFileData checkpointFileData = new CheckpointFileData();
+            CheckpointFileData checkpointFileData = this.ReadCheckpointFile();
             checkpointFileData.schedulingDateTime = this.GetNextSchedulingTime();
             if(updateAttempted)
             {
