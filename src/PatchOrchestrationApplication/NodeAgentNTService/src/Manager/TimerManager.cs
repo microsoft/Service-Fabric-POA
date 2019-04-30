@@ -420,14 +420,30 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             if (File.Exists(checkpointFilepath))
             {
                 string text = File.ReadAllText(checkpointFilepath).Trim();
-                string[] arr = text.Split(' ');
-                checkpointFileData.schedulingDateTime = DateTime.ParseExact(arr[0], "yyyyMMddHHmmss", null);
-                checkpointFileData.rescheduleCount = (long)Convert.ChangeType(arr[1], typeof(long));
-                checkpointFileData.rescheduleNeeded = Boolean.Parse(arr[2]);
-                if(arr.Length == 4)
+                try
                 {
-                    checkpointFileData.lastAttemptedUpdateTime = DateTime.ParseExact(arr[3], "yyyyMMddHHmmss", null);
+                    string[] arr = text.Split(' ');
+                    checkpointFileData.schedulingDateTime = DateTime.ParseExact(arr[0], "yyyyMMddHHmmss", null);
+                    checkpointFileData.rescheduleCount = (long)Convert.ChangeType(arr[1], typeof(long));
+                    checkpointFileData.rescheduleNeeded = Boolean.Parse(arr[2]);
+                    if (arr.Length == 4)
+                    {
+                        checkpointFileData.lastAttemptedUpdateTime = DateTime.ParseExact(arr[3], "yyyyMMddHHmmss", null);
+                    }
                 }
+                catch(Exception ex)
+                {
+                    if(String.IsNullOrWhiteSpace(text))
+                    {
+                        _eventSource.ErrorMessage("TimerCheckPoint.txt is empty, so, deleting the file");
+                        File.Delete(checkpointFilepath);
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+                
             }
             _eventSource.InfoMessage("Checkpoint file read: {0}", checkpointFileData);
             return checkpointFileData;
