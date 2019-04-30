@@ -679,8 +679,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {
                 return
                     string.Format(
-                        "CheckpointFileData : schedulingDateTime : {0} , rescheduleCount : {1} , rescheduleNeeded : {2}",             
-                        schedulingDateTime, rescheduleCount, rescheduleNeeded
+                        "CheckpointFileData : schedulingDateTime : {0} , rescheduleCount : {1} , rescheduleNeeded : {2}, lastAttemptedUpdateTime : {3}", 
+                        schedulingDateTime, rescheduleCount, rescheduleNeeded, lastAttemptedUpdateTime
                     );
             }
         }        
