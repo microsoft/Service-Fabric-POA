@@ -301,6 +301,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                             this._nodeAgentSfUtility.UpdateSearchAndDownloadStatus(NodeAgentSfUtilityExitCodes.DownloadCompleted, searchAndDownloadResult, utilityTaskTimeOut);
 
+                            string WUDownloadComplete = string.Format("Windows updates downloaded, waiting for installation approval from Repair Manager.");
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, WUDownloadComplete, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+
                             NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                             if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
                             {
