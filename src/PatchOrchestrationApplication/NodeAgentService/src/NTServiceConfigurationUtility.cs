@@ -24,6 +24,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
             {
                 try
                 {
+                    ValidateNTServiceSettings(package.Settings.Sections[NtServiceSectionName]);
                     ComposeSettingsXml(package.Settings.Sections[NtServiceSectionName], filePath);
                     ServiceEventSource.Current.InfoMessage("Successfully stored new settings at {0}", filePath);
                 }
@@ -31,6 +32,82 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                 {
                     ServiceEventSource.Current.InfoMessage("Failed to save new settings at {0}", filePath);
                     throw;
+                }
+            }
+        }
+
+        private static void ValidateNTServiceSettings(ConfigurationSection configurationSection)
+        {
+            if (configurationSection != null)
+            {
+
+                string paramName = "WUOperationRetryCount";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+
+                paramName = "WUDelayBetweenRetriesInMinutes";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "WUOperationTimeOutInMinutes";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "WURescheduleTimeInMinutes";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "WURescheduleCount";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "DisableWindowsUpdates";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "OperationTimeOutInMinutes";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "InstallWindowsOSOnlyUpdates";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+                paramName = "AcceptWindowsUpdateEula";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                }
+            }
+        } 
+
+
+        private static void ValidateParameter<T> (string paramName, string value)
+        {
+            try
+            {
+                var outValue = (T)Convert.ChangeType(value, typeof(T));
+            }
+            catch (Exception ex)
+            {
+                if(ex is FormatException || ex is InvalidCastException || ex is OverflowException)
+                {
+                    string errorMessage = string.Format("Value: {0} of Parameter : {0} is invalid", value, paramName);
+                    ServiceEventSource.Current.ErrorMessage(errorMessage);
+                    throw new ArgumentException(errorMessage);
+                }
+                else
+                {
+                    throw ex;
                 }
             }
         }
