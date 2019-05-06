@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.Fabric.Query;
-using System.Fabric.Repair;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Fabric.Health;
-    
+
+
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
+    using System;
+    using System.Xml;
+    using System.Linq;
+    using System.Fabric;
+    using System.Fabric.Query;
+    using System.Fabric.Repair;
+    using System.Threading.Tasks;
+    using System.Fabric.Health;
     using System.Diagnostics;
     using System.Threading;
-    using System.Xml;
+    using System.Collections.Generic;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
-
     using HealthState = System.Fabric.Health.HealthState;
 
     /// <summary>
@@ -351,7 +351,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// </summary>
         internal async Task PostWarningOnCoordinatorService(string warningDescription, int timeToLiveInMinutes)
         {
-            bool considerWarningAsError = await ConsiderWarningAsErrorIsTrue();
+            bool considerWarningAsError = await CheckIfConsiderWarningAsErrorIsTrue();
             if (considerWarningAsError)
             {
                 HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Ok, timeToLiveInMinutes);
@@ -365,13 +365,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <summary>
         /// Utility to find out ConsiderWarningAsError in Cluster manifest.
         /// </summary>
-        private async Task<bool> ConsiderWarningAsErrorIsTrue()
+        private async Task<bool> CheckIfConsiderWarningAsErrorIsTrue()
         {
             string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
             XmlDocument clusterManifest = new XmlDocument();
             string val = GetParamValueFromSection(clusterManifest, "HealthManager/ClusterHealthPolicy", "ConsiderWarningAsError");
             bool flag;
-            if(Boolean.TryParse(val,out flag))
+            if(Boolean.TryParse(val, out flag))
             {
                 return flag;
             }

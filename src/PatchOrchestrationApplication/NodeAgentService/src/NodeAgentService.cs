@@ -3,14 +3,14 @@
 
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
 {
-    using System.Collections.Generic;
-    using System.Fabric;
-    using System.Fabric.Description;
     using System.IO;
+    using System.Fabric;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.ServiceFabric.Services.Communication.Runtime;
+    using System.Fabric.Description;
+    using System.Collections.Generic;
     using Microsoft.ServiceFabric.Services.Runtime;
+    using Microsoft.ServiceFabric.Services.Communication.Runtime;
 
     /// <summary>
     /// Stateless agent service responsible for carrying out the actual patch work on each node.

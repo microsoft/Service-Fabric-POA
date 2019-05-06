@@ -200,7 +200,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
         /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
         /// <param name="healthState"><see cref="HealthState"/>Indicating the severity of the health report</param>
-        /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
+        /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates the lifetime of event in minutes.</param>
         /// <param name="timeout">Timeout for the async operation</param>
         /// <param name="cancellationToken">The cancellation token to cancel the async operation</param>
         /// <returns>Operation result in <see cref="NodeAgentSfUtilityExitCodes"/></returns>

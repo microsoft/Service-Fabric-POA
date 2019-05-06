@@ -1,25 +1,22 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using Microsoft.ServiceFabric.Data.Collections;
-using Microsoft.ServiceFabric.PatchOrchestration.Common;
-using Microsoft.ServiceFabric.Services.Runtime;
-
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
-    using Microsoft.ServiceFabric.Services.Remoting.Runtime;
-    using System.Fabric.Description;
-    using System.Linq;
-
-    using TelemetryLib;
-
+    using System;
     using WebService;
+    using System.Linq;
+    using TelemetryLib;
+    using System.Fabric;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Fabric.Description;
+    using System.Collections.Generic;
+    using Microsoft.ServiceFabric.Data.Collections;
+    using Microsoft.ServiceFabric.Services.Runtime;
+    using Microsoft.ServiceFabric.PatchOrchestration.Common;
+    using Microsoft.ServiceFabric.Services.Communication.Runtime;
+    using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 
     /// <summary>
     /// An instance of this class is created for each service replica by the Service Fabric runtime.

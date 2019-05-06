@@ -56,15 +56,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + serviceNameSuffix), healthInformation);
                 Func<string, bool> condition = (s) => {
-                    bool serviceExists = CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
-                    if (serviceExists)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
                 };
                 HealthReportSendOptions sendOptions = new HealthReportSendOptions();
                 sendOptions.Immediate = true;

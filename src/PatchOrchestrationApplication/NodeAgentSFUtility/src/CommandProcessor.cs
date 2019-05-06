@@ -4,15 +4,15 @@
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
 {
     using System;
-    using System.Fabric;
-    using System.Fabric.Repair;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Common;
     using Helpers;
+    using System.IO;
+    using System.Linq;
+    using System.Fabric;
+    using System.Fabric.Repair;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// Utility for executing the commands which were specified in commandline parameter 
