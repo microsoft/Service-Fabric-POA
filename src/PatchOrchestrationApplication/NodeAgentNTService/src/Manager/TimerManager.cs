@@ -30,7 +30,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private readonly CancellationToken _cancellationToken;        
         private readonly NodeAgentSfUtility _nodeAgentSfUtility;
         private readonly ServiceSettings _serviceSettings;
-        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
+        private const string WUOperationStatus = "WUOperationStatus";
 
         /// <summary>
         /// Initializes timer manager.
@@ -92,12 +92,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 string healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
-                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
             }
             else
             {
                 string healthDescription = string.Format(formatString, fileData.lastAttemptedUpdateTime.ToString(), fileData.schedulingDateTime.ToString());
-                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
             }
         }
 

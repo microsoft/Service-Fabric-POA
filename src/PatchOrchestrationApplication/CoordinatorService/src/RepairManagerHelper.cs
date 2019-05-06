@@ -35,7 +35,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         internal TaskApprovalPolicy RmPolicy = TaskApprovalPolicy.NodeWise;
         private const string ClusterPatchingStatusProperty = "ClusterPatchingStatus";
         private int postUpdateCount = 0;
-        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
+        private const string WUOperationStatus = "WUOperationStatus";
 
         /// <summary>
         /// Default timeout for async operations
@@ -406,7 +406,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
                 foreach (var e in health.HealthEvents)
                 {
-                    if (e.HealthInformation.Property.Contains(WUOperationStatusUpdate))
+                    if (e.HealthInformation.Property.Contains(WUOperationStatus))
                     {
                         healthEventsToCheck.Add(e);
                     }
@@ -424,7 +424,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 {
                     foreach (var node in nodeList)
                     {
-                        propertyDict.Add(WUOperationStatusUpdate + "-" + node.NodeName, true);
+                        propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
                     }
                     foreach (var e in healthEventsToCheck)
                     {

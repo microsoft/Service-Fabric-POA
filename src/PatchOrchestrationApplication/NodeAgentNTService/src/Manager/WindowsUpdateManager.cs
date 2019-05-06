@@ -29,7 +29,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private UpdateSession _uSession;        
         private WUCollectionWrapper _wuCollectionWrapper;
         private Task<bool> _task;
-        private const string WUOperationStatusUpdate = "WUOperationStatusUpdate";
+        private const string WUOperationStatus = "WUOperationStatus";
 
         /// <summary>
         /// Initializes the update manager.
@@ -291,7 +291,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 break;
                             }
                             string wUStatusUpdate = string.Format("Windows update download started.");
-                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);
@@ -302,7 +302,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             this._nodeAgentSfUtility.UpdateSearchAndDownloadStatus(NodeAgentSfUtilityExitCodes.DownloadCompleted, searchAndDownloadResult, utilityTaskTimeOut);
 
                             string WUDownloadComplete = string.Format("Windows updates downloaded, waiting for installation approval from Repair Manager.");
-                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, WUDownloadComplete, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, WUDownloadComplete, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                             NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                             if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
@@ -313,7 +313,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             }
 
                             wUStatusUpdate = string.Format("Windows update installation in progress.");
-                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, wUStatusUpdate, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, wUStatusUpdate, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                             this._nodeAgentSfUtility.UpdateInstallationStatus(NodeAgentSfUtilityExitCodes.InstallationInProgress, null, utilityTaskTimeOut);
 
@@ -334,7 +334,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         if(wuOperationState == NodeAgentSfUtilityExitCodes.DownloadCompleted)
                         {
                             string WUDownloadComplete = string.Format("Windows updates downloaded, waiting for installation approval from Repair Manager.");
-                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, WUDownloadComplete, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                            this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, WUDownloadComplete, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                         }
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                         if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
@@ -345,7 +345,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         }
 
                         string wUStatusUpdate = string.Format("Windows update installation in progress.");
-                        this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatusUpdate, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                        this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                         OperationResultCode searchResult = SearchUpdates(cancellationToken);
                         reschedule = (searchResult != OperationResultCode.orcSucceeded ? true : reschedule);
