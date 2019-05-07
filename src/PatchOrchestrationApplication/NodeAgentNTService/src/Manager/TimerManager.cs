@@ -63,7 +63,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                 this.DisableWindowsUpdate();
                 
-                this.PostWUUpdateEventOnServicePackage();
+                this.PostWUUpdateEventOnService();
 
                 this.ScheduleTimer();
             }
@@ -86,10 +86,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         /// <summary>
         /// This will post an event containing the information about patching on CoordinatorService.
         /// </summary>
-        private void PostWUUpdateEventOnServicePackage()
+        private void PostWUUpdateEventOnService()
         {
             CheckpointFileData fileData = this.ReadCheckpointFile();
-            string formatString = "LastAttemptedWUTime : {0}, NextWUDownloadTime : {1}";
+            string formatString = "Last patching attempt happened at : {0}, Next patching cycle is scheduled at : {1}";
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 string healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
@@ -136,7 +136,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         auUtility.SetAUOptions();
                         _eventSource.InfoMessage("New AU registry values are {0}", auUtility.LogCurrentAUValues());
                     }
-                    string updateMsg = "Automatic Windows update disabled successfully.";
+                    string updateMsg = "Windows Update policy has been configured to \"Notify before Download\"";
                     this._nodeAgentSfUtility.ReportHealth(WindowsUpdateSetting, updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     return;
                 }
@@ -333,7 +333,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             checkpointFileData.rescheduleCount = 0;
             checkpointFileData.rescheduleNeeded = false;
             this.WriteCheckpointFile(checkpointFileData);
-            this.PostWUUpdateEventOnServicePackage();
+            this.PostWUUpdateEventOnService();
         }
 
         private bool UpdateSettingsAndCreateCheckpoint(bool updateAttempted = true)

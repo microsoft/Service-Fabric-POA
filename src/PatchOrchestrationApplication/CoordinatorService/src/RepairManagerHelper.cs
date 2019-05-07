@@ -439,7 +439,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
 
                         // I think we would need to change the expiry time to ~0
-                        string description = "This health event will be expired in 1 minute as node corresponding to this event is deleted.";
+                        string description = "This node is no longer part of the cluster.";
                         HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
                     }
                 }
@@ -470,8 +470,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 processingNodes.Add(task.Target.ToString());
             }
 
-            string pendingNodesString = string.Join(",", pendingNodes);
-            string processingNodesString = string.Join(",", processingNodes);
+            string pendingNodesString = string.Join(", ", pendingNodes);
+            string processingNodesString = string.Join(", ", processingNodes);
             
             if(String.IsNullOrEmpty(pendingNodesString))
             {
@@ -483,7 +483,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 processingNodesString = "None";
             }
 
-            string description = string.Format("ProcessingNodes :{0}, PendingNodes: {1}", processingNodesString, pendingNodesString);
+            string description = string.Format("Node currently being patched: {0} \n Nodes waiting to be patched: {1}", processingNodesString, pendingNodesString);
             HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok);
         }
 
@@ -586,8 +586,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
 
         }
-
-        
 
         /// <summary>
         /// Fetches all the repair tasks which are under execution and checks

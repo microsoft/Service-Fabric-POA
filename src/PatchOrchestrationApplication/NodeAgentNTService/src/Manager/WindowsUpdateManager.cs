@@ -294,7 +294,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 break;
                             }
                             string wUStatusUpdate = string.Format("Windows update download started.");
-                            this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                            this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, wUStatusUpdate, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);

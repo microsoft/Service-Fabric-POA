@@ -36,7 +36,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
             this._helper = new Helper();
             this._settingsManager = settingsManager;
             this._serviceSettings = settingsManager.GetSettings();
-            this._cancellationToken = cancellationToken;this._nodeName = nodeName;
+            this._cancellationToken = cancellationToken;
+            this._nodeName = nodeName;
             this._applicationUri = applicationUri;
         }
 
