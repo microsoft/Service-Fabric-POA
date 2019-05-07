@@ -37,6 +37,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private int postUpdateCount = 0;
         private const string WUOperationStatus = "WUOperationStatus";
         private const string NodeAgentServiceName = "fabric:/PatchOrchestrationApplication/NodeAgentService";
+        private const string WindowsUpdateSetting = "WindowsUpdateSetting";
 
         /// <summary>
         /// Default timeout for async operations
@@ -409,7 +410,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
                 foreach (var e in health.HealthEvents)
                 {
-                    if (e.HealthInformation.Property.Contains(WUOperationStatus))
+                    if (e.HealthInformation.Property.Contains(WUOperationStatus) || e.HealthInformation.Property.Contains(WindowsUpdateSetting))
                     {
                         healthEventsToCheck.Add(e);
                     }
@@ -419,7 +420,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
                 List<string> orphanProperties = new List<string>();
                 Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
-                if (healthEventsToCheck.Count == nodeList.Count)
+                if (healthEventsToCheck.Count == 2*nodeList.Count)
                 {
                     return;
                 }
@@ -428,6 +429,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     foreach (var node in nodeList)
                     {
                         propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
+                        propertyDict.Add(WindowsUpdateSetting + "-" + node.NodeName, true);
                     }
                     foreach (var e in healthEventsToCheck)
                     {
@@ -441,7 +443,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
 
-                        // I think we would need to change the expiry time to ~0
                         string description = "This node is no longer part of the cluster.";
                         HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, property, description, HealthState.Ok, 1);
                     }
