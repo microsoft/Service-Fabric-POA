@@ -28,7 +28,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
 
         private const string ExecutorDataForNtServiceFileName = "ExecutorDataForNtService.txt";
         private const string ServiceNameSuffix = "/NodeAgentService";
-        private const string CoordinatorServiceSuffix = "/CoordinatorService";
 
         /// <summary>
         /// Constructor for Command Processor
@@ -91,17 +90,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
                 case "ReportHealth":
                     return
                         this.ReportHealth(
-                            new Uri(args[1]),
-                            args[2],
-                            args[3],
-                            (HealthState)Enum.Parse(typeof(HealthState), (args[4])),
-                            long.Parse(args[5]),
-                            TimeSpan.FromSeconds(int.Parse(args[6])),
-                            this.cancellationTokenSource.Token);
-
-                case "ReportWUStatusUpdateOnCoordinatorService":
-                    return
-                        this.ReportWUStatusUpdateOnCoordinatorService(
                             new Uri(args[1]),
                             args[2],
                             args[3],
@@ -479,28 +467,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
             return result;
         }
 
-    
-
-        /// <summary>
-        /// Utility to Report information logs of windows update on Coordinator Service. Typical usecases are as below
-        /// 1. To show the last update attempted time and next update start time
-        /// 2. To show the sub-state of node when update is going on a node.
-        /// </summary>
-        /// <param name="applicationName">Application name for constructing the servicename</param>
-        /// <param name="healthProperty">Title for health report. Once the health report is set, any future updates should be done using same healthProperty.</param>
-        /// <param name="healthDescription">Description of the health. In case of failure a good description is very helpful for quick mitigation.</param>
-        /// <param name="healthState"><see cref="HealthState"/>Indicating the severity of the health report</param>
-        /// <param name="timeToLiveInMinutes">Time to live for health report in the health manager in minutes. Default value is -1 indicating infinite time to live, any positive value indicates </param>
-        /// <param name="timeout">Timeout for the async operation</param>
-        /// <param name="cancellationToken">Cancellation token to cancel this async operation</param>
-        /// <returns>Operation result in <see cref="NodeAgentSfUtilityExitCodes"/></returns>
-        public NodeAgentSfUtilityExitCodes ReportWUStatusUpdateOnCoordinatorService(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
-    long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, CoordinatorServiceSuffix, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
-            ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
-            return result;
-        }
         /// <summary>
         /// Gets the application status of a deployed application
         /// </summary>

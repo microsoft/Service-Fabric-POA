@@ -55,17 +55,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
             try
             {
                 ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + serviceNameSuffix), healthInformation);
-                Func<string, bool> condition = (s) => {
-                    return CheckIfServiceIsUp(fabricClient, applicationName, s).GetAwaiter().GetResult();
-                };
                 HealthReportSendOptions sendOptions = new HealthReportSendOptions();
                 sendOptions.Immediate = true;
-                TimeoutProcessWithRetry(() =>
-                {
-                    fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
-                }, condition,
-                serviceNameSuffix, timeout
-                );
+                fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
 
                 Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
@@ -87,51 +79,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
                     return NodeAgentSfUtilityExitCodes.Failure;
                 }
             }
-        }
-
-        /// <summary>
-        /// Retry utility to check for a condition to run the function specified in params.
-        /// </summary>
-        /// <param name="condition">Condition to check before running the function passed./</param>
-        /// <param name="process">function to run if condition passes within configured timeout.</param>
-        /// <param name="timeout">Timeout configured for this operation.</param>
-        internal static void TimeoutProcessWithRetry(Action process, Func<string, bool> condition, string s, TimeSpan timeout)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            int count = 0;
-            while(stopwatch.Elapsed < timeout)
-            {
-                if(condition(s))
-                {
-                    process();
-                    return;
-                }
-                count++;
-                Thread.Sleep(TimeSpan.FromSeconds(1 * count));
-            }
-            stopwatch.Reset();
-            throw new TimeoutException(string.Format("Timeout occurred while trying to run the process {0}", process.GetType().Name.ToString()));
-        }
-
-        /// <summary>
-        /// This method checks if the service with specified suffix is up or not.
-        /// </summary>
-        /// <param name="fabricClient">Fabric client./</param>
-        /// <param name="applicationName">Application name of the service</param>
-        /// <param name="timeout">Suffix of the service to check.</param>
-        internal static async Task<bool> CheckIfServiceIsUp(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix)
-        {
-            ServiceList list = await fabricClient.QueryManager.GetServiceListAsync(applicationName);
-            Uri serviceUri = new Uri(applicationName + serviceNameSuffix);
-            foreach (var s in list)
-            {
-                if (s.ServiceName == serviceUri)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

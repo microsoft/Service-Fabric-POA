@@ -93,12 +93,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 string healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
-                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
             }
             else
             {
                 string healthDescription = string.Format(formatString, fileData.lastAttemptedUpdateTime.ToString(), fileData.schedulingDateTime.ToString());
-                this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
             }
         }
 
