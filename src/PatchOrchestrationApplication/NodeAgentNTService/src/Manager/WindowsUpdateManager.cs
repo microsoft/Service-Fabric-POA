@@ -134,15 +134,18 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
             NodeAgentSfUtilityExitCodes wuOperationState = this._nodeAgentSfUtility.GetWuOperationState(utilityTaskTimeOut);
             _eventSource.InfoMessage("Handling restart. Current WU Operation State : {0}.", wuOperationState);
+            string systemRestartDescription = "Installation attempted, now trying to restart the node.";
 
             switch (wuOperationState)
             {
                 case NodeAgentSfUtilityExitCodes.InstallationCompleted:
                     this._nodeAgentSfUtility.UpdateInstallationStatus(NodeAgentSfUtilityExitCodes.RestartRequested, null, utilityTaskTimeOut);
+                    this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, systemRestartDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     this.RestartSystem();
                     break;
 
                 case NodeAgentSfUtilityExitCodes.RestartRequested:
+                    this._nodeAgentSfUtility.ReportWUStatusUpdateOnCoordinatorService(WUOperationStatus, systemRestartDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     this.RestartSystem();
                     break;
                 case NodeAgentSfUtilityExitCodes.OperationCompleted:
@@ -356,7 +359,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             {
                                 string msg =
                                     "Current Operation state : InstallationApproved but no updates found to install. Completing the operation.";
-                                this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                                this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                                 _eventSource.WarningMessage(msg);
                                 //Complete operation.
                                 this._nodeAgentSfUtility.UpdateInstallationStatus(

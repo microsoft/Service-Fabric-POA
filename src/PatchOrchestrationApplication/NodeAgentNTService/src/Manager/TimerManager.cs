@@ -31,6 +31,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private readonly NodeAgentSfUtility _nodeAgentSfUtility;
         private readonly ServiceSettings _serviceSettings;
         private const string WUOperationStatus = "WUOperationStatus";
+        private const string WindowsUpdateSetting = "WindowsUpdateSetting";
 
         /// <summary>
         /// Initializes timer manager.
@@ -71,7 +72,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 string msg = string.Format("Exception while starting timer. {0}", e);
                 _eventSource.ErrorMessage(msg);
                 
-                this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult",msg, HealthState.Warning, -1,
+                this._nodeAgentSfUtility.ReportHealth(WindowsUpdateSetting, msg, HealthState.Warning, -1,
                             TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
                 TimeSpan operationTimeSpan = TimeSpan.FromMinutes(WaitTimeInMinutes);
@@ -136,7 +137,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         _eventSource.InfoMessage("New AU registry values are {0}", auUtility.LogCurrentAUValues());
                     }
                     string updateMsg = "Automatic Windows update disabled successfully.";
-                    this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                    this._nodeAgentSfUtility.ReportHealth(WindowsUpdateSetting, updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     return;
                 }
                 catch (Exception e)
@@ -145,7 +146,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 }
 
                 _eventSource.WarningMessage(msg);
-                this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult", msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                this._nodeAgentSfUtility.ReportHealth(WindowsUpdateSetting, msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                 this._helper.WaitOnTask(Task.Delay(TimeSpan.FromMinutes(WaitTimeInMinutes)), this._cancellationToken);
             } while (true);            
         }
@@ -218,10 +219,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 {
                     this.ScheduleWindowsUpdates();
 
-                    this.CreateNewCheckpointFile();
-                    this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult",
-                            "Able to update successfully", HealthState.Ok, 15,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));                        
+                    this.CreateNewCheckpointFile();                       
 
                     this.ScheduleTimer();
                     return;
@@ -271,9 +269,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     else
                     {
                         this.CreateNewCheckpointFile();
-                        this._nodeAgentSfUtility.ReportHealth("WindowsUpdateOperationResult",
-                            "Able to update successfully", HealthState.Ok, 15,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     }
 
                     this.ScheduleTimer();

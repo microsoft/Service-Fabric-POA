@@ -87,7 +87,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         public bool UpdateInstallationStatus(NodeAgentSfUtilityExitCodes updateState, WindowsUpdateOperationResult operationResult = null, TimeSpan timeout = default(TimeSpan))
         {
             _eventSource.InfoMessage("Updating installation status : updateState : {0}, operationResult : {1}, timeout : {2}", updateState, operationResult, timeout);
-            this.ReportCurrentNodeStatus(operationResult);
             string filePath = Path.Combine(this._settingsManager.TempFolder , OperationResultFileName);
             string[] arguments;
 
@@ -133,7 +132,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         public bool UpdateSearchAndDownloadStatus(NodeAgentSfUtilityExitCodes updateState, WindowsUpdateOperationResult operationResult = null, TimeSpan timeout = default(TimeSpan))
         {            
             _eventSource.InfoMessage("Updating search and download  status : updateState : {0}, operationResult : {1}, timeout : {2}", updateState, operationResult, timeout);
-            this.ReportCurrentNodeStatus(operationResult);
             string filePath = Path.Combine(this._settingsManager.TempFolder, OperationResultFileName);
             string[] arguments;
 
@@ -168,26 +166,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                 retries++;
             }
             throw new Exception("Not able to update Search/download status.");
-        }
-
-        /// <summary>
-        /// Posts latest operation status of the current node in the form of health report
-        /// </summary>
-        /// <returns></returns>
-        public void ReportCurrentNodeStatus(WindowsUpdateOperationResult result)
-        {
-            if (result != null && result.UpdateDetails != null)
-            {
-                StringBuilder message = new StringBuilder();
-                message.AppendFormat("{0} updates were {1} on {2}", result.UpdateDetails.Count,
-                    result.OperationType == WindowsUpdateOperationType.SearchAndDownload ? "downloaded" : "installed",
-                    result.OperationTime.ToString("dddd, dd MMMM yyyy"));
-
-                message.AppendFormat("\nFor installation results refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results");
-
-                this.ReportHealth("WindowsUpdateStatus", message.ToString(), HealthState.Ok, -1,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
-            }
         }
 
         /// <summary>
