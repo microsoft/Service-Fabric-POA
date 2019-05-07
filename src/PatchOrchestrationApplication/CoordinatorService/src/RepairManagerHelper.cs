@@ -36,6 +36,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string ClusterPatchingStatusProperty = "ClusterPatchingStatus";
         private int postUpdateCount = 0;
         private const string WUOperationStatus = "WUOperationStatus";
+        private const string NodeAgentServiceName = "fabric:/PatchOrchestrationApplication/NodeAgentService";
 
         /// <summary>
         /// Default timeout for async operations
@@ -117,6 +118,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <returns>List of repair tasks in claimed state</returns>
         private async Task<IList<RepairTask>> GetClaimedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
         {
+
             IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
                 RepairTaskStateFilter.Claimed,
                 ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
@@ -402,7 +404,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         {
             try
             {
-                ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(this.context.ServiceName);
+                Uri nodeAgentServiceUri = new Uri(NodeAgentServiceName);
+                ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(nodeAgentServiceUri);
                 List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
                 foreach (var e in health.HealthEvents)
                 {
@@ -440,7 +443,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
                         // I think we would need to change the expiry time to ~0
                         string description = "This node is no longer part of the cluster.";
-                        HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, property, description, HealthState.Ok, 1);
+                        HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, property, description, HealthState.Ok, 1);
                     }
                 }
             }
