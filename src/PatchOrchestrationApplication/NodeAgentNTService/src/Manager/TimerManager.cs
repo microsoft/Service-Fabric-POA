@@ -136,7 +136,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         auUtility.SetAUOptions();
                         _eventSource.InfoMessage("New AU registry values are {0}", auUtility.LogCurrentAUValues());
                     }
-                    string updateMsg = "Windows Update policy has been configured to \"Notify before Download\"";
+                    string updateMsg = "Windows Update policy has been configured to Notify before Download";
                     this._nodeAgentSfUtility.ReportHealth(WindowsUpdateSetting, updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     return;
                 }
