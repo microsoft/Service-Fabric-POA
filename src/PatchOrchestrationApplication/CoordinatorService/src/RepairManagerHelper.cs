@@ -37,7 +37,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private int postUpdateCount = 0;
         private const string WUOperationStatus = "WUOperationStatus";
         private const string NodeAgentServiceName = "fabric:/PatchOrchestrationApplication/NodeAgentService";
-        private const string WindowsUpdateSetting = "WindowsUpdateSetting";
+        private const string WUOperationSetting = "WUOperationSetting";
 
         /// <summary>
         /// Default timeout for async operations
@@ -410,7 +410,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
                 foreach (var e in health.HealthEvents)
                 {
-                    if (e.HealthInformation.Property.Contains(WUOperationStatus) || e.HealthInformation.Property.Contains(WindowsUpdateSetting))
+                    if (e.HealthInformation.Property.Contains(WUOperationStatus) || e.HealthInformation.Property.Contains(WUOperationSetting))
                     {
                         healthEventsToCheck.Add(e);
                     }
@@ -429,7 +429,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     foreach (var node in nodeList)
                     {
                         propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
-                        propertyDict.Add(WindowsUpdateSetting + "-" + node.NodeName, true);
+                        propertyDict.Add(WUOperationSetting + "-" + node.NodeName, true);
                     }
                     foreach (var e in healthEventsToCheck)
                     {
