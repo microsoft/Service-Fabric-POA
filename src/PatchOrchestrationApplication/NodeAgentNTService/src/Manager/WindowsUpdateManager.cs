@@ -226,6 +226,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             WindowsServiceUtility.StopNtService(WindowsServiceUtility.FabricHostSvcName, _eventSource);
         }
 
+        /// <summary>
+        /// This method tries to read the last operation(download/install) start time saved in the file.
+        /// </summary>
         private DateTime ReadLastOperationStartTimeStamp()
         {
             string LastUpdateOperationStartTimeStampFilePath = this.GetLastOperationStartTimeStampFilePath();
@@ -244,6 +247,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             return default(DateTime);
         }
 
+        /// <summary>
+        /// This method tries to update the previous operation(download/install) start time saved in the file.
+        /// </summary>        
         private void UpdateLastOperationStartTimeStamp(DateTime timeStamp)
         {
             try
@@ -258,6 +264,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             this.lastUpdateOperationStartTimeStamp = timeStamp;
         }
 
+        /// <summary>
+        /// This method tries to write the previous operation(download/install) start time saved in the file.
+        /// </summary>
         private void WriteLastOperationStartTimeStamp(DateTime timeStamp)
         {
             string randomFilePath = Path.Combine(this._settingsManager.TempFolder, Path.GetRandomFileName());
