@@ -358,7 +358,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             if (this._wuCollectionWrapper.Collection.Count == 0)
                             {
                                 string msg =
-                                    "Current Operation state : InstallationApproved but no updates found to install. Completing the operation.";
+                                    "Installation approved but no updates found to install. Completing the operation.";
                                 this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                                 _eventSource.WarningMessage(msg);
                                 //Complete operation.
