@@ -4,8 +4,12 @@
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 {
     using System;
+    using System.Diagnostics;
     using System.Fabric;
     using System.Fabric.Health;
+    using System.Fabric.Query;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
     using HealthState = System.Fabric.Health.HealthState;
 
@@ -22,19 +26,20 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
         /// <summary>
         /// Suffix name to be appended with ApplicationName
         /// </summary>
-        private const string ServiceNameSuffix = "/NodeAgentService";
 
         /// <summary>
         /// Posts a health report against Patch Orchestration Application's NodeAgentService
         /// </summary>
         /// <param name="fabricClient">Fabric client object to carry out HM operations</param>
         /// <param name="applicationName">Name of the application to construct servicename</param>
+        /// <param name="serviceNameSuffix">serviceNameSuffix of the service to construct servicename</param>
         /// <param name="healthReportProperty">Property of the health report</param>
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string healthReportProperty, string description,
-            HealthState healthState, long timeToLiveInMinutes = -1)
+        /// <param name="timeout">Configured timeout for this operation.</param>
+        internal static NodeAgentSfUtilityExitCodes PostServiceHealthReport(FabricClient fabricClient, Uri applicationName, string serviceNameSuffix, string healthReportProperty, string description,
+            HealthState healthState, TimeSpan timeout,long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
                 healthState)
@@ -49,17 +54,25 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility.Helpers
 
             try
             {
-                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + ServiceNameSuffix), healthInformation);
-                fabricClient.HealthManager.ReportHealth(healthReport);
+                ServiceHealthReport healthReport = new ServiceHealthReport(new Uri(applicationName + serviceNameSuffix), healthInformation);
+                HealthReportSendOptions sendOptions = new HealthReportSendOptions();
+                sendOptions.Immediate = true;
+                fabricClient.HealthManager.ReportHealth(healthReport, sendOptions);
+
+                Task.Delay(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
                 return NodeAgentSfUtilityExitCodes.Success;
             }
             catch (Exception e)
             {
                 ServiceEventSource.Current.ErrorMessage(
-                    String.Format("HealthManagerHelper.PostNodeHealthReport failed. Exception details {0}", e));
+                    String.Format("HealthManagerHelper.PostNodeHealthReport for Service {0} failed. Exception details {1}", serviceNameSuffix, e));
                 if (e is FabricTransientException)
                 {
                     return NodeAgentSfUtilityExitCodes.RetryableException;
+                }
+                else if(e is TimeoutException)
+                {
+                    return NodeAgentSfUtilityExitCodes.TimeoutException;
                 }
                 else
                 {

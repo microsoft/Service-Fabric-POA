@@ -190,7 +190,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// <param name="cancellationToken">The cancellation token to cancel the async operation</param>
         /// <returns>Operation result in <see cref="NodeAgentSfUtilityExitCodes"/></returns>
         NodeAgentSfUtilityExitCodes ReportHealth(Uri applicationName, string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken);
-
+        
         /// <summary>
         /// Gets the application status of a deployed application
         /// </summary>

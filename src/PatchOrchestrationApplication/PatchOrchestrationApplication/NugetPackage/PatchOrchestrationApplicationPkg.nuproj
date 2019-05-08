@@ -16,9 +16,9 @@
   <PropertyGroup Label="Configuration">
     <Id>ServiceFabric.PatchOrchestrationApplication</Id>
     <Title>ServiceFabric.PatchOrchestrationApplication</Title>
-    <Version>1.3.2</Version>
-    <Authors>nachandr</Authors>
-    <Owners>nachandr</Owners>
+    <Version>1.4.0</Version>
+    <Authors>brkhande;raunakp</Authors>
+    <Owners>brkhande;raunakp</Owners>
     <Description>This package contains Service Fabric Patch Orchestration Application.</Description>
     <Summary>This package contains Service Fabric Patch Orchestration Application, the application helps in keeping the nodes of service fabric cluster updated with latest windows updates</Summary>
     <Tags>PatchOrchestrationApplication</Tags>

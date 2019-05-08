@@ -1,21 +1,22 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.Fabric.Query;
-using System.Fabric.Repair;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
+    using System;
+    using System.Xml;
+    using System.Linq;
+    using System.Fabric;
+    using System.Fabric.Query;
+    using System.Fabric.Repair;
+    using System.Threading.Tasks;
+    using System.Fabric.Health;
     using System.Diagnostics;
     using System.Threading;
-
+    using System.Collections.Generic;
     using Microsoft.ServiceFabric.PatchOrchestration.Common;
-
     using HealthState = System.Fabric.Health.HealthState;
 
     /// <summary>
@@ -32,8 +33,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string RepairManagerStatus = "RepairManager status";
         private const string NodeTimeoutStatusFormat = "Node : {0} exceeding installation timeout";
         internal TaskApprovalPolicy RmPolicy = TaskApprovalPolicy.NodeWise;
+        private const string ClusterPatchingStatusProperty = "ClusterPatchingStatus";
+        private int postUpdateCount = 0;
+        private const string WUOperationStatus = "WUOperationStatus";
+        private const string NodeAgentServiceName = "fabric:/PatchOrchestrationApplication/NodeAgentService";
+        private const string WUOperationSetting = "WUOperationSetting";
 
         /// <summary>
+        /// Default timeout for async operations
         /// Default timeout for async operations
         /// </summary>
         internal TimeSpan DefaultTimeoutForOperation = TimeSpan.FromMinutes(5);
@@ -112,6 +119,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <returns>List of repair tasks in claimed state</returns>
         private async Task<IList<RepairTask>> GetClaimedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
         {
+
             IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
                 RepairTaskStateFilter.Claimed,
                 ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
@@ -274,6 +282,215 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
         }
 
+
+        /// <summary>
+        /// Post the cluster patching status as events on CoordinatorService
+        /// </summary>
+        public async Task PostClusterPatchingStatus(CancellationToken cancellationToken)
+        {
+            try
+            {
+                NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+                IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
+                RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (claimedTaskList.Any())
+                {
+                    if (!processingTaskList.Any())
+                    {
+                        // This means that repair tasks are not getting approved.
+                        ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
+                        if (clusterHealth.AggregatedHealthState == HealthState.Error)
+                        { 
+                            // Reset Count
+                            postUpdateCount = 0;
+                            string warningDescription = " Cluster is currently unhealthy. Nodes are currently not getting patched by Patch Orchestration Application. Please ensure the cluster becomes healthy for patching to continue.";
+                            await PostWarningOnCoordinatorService(warningDescription, 1);
+                        }
+                        else
+                        {
+                            postUpdateCount++;
+                            if (postUpdateCount > 60)
+                            {
+                                // Reset Count and throw a warning on the service saying we dont know the reason. But POA not is not approving tasks.
+                                postUpdateCount = 0;
+                                string warningDescription = "Patch Orchestration Application is currently not patching nodes. This could be possible if there is some node which is stuck in disabling state for long time.";
+                                await PostWarningOnCoordinatorService(warningDescription, 61);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Reset Count
+                        postUpdateCount = 0;
+                        await PostRMTaskNodeUpdate(cancellationToken);
+                    }
+                }
+                else
+                {
+                    // Reset Count
+                    postUpdateCount = 0;
+                    if (processingTaskList.Any())
+                    {
+                        await PostRMTaskNodeUpdate(cancellationToken);
+                    }
+                    else
+                    {
+                        // Post the health event saying that there is no repair task and things are working fine.
+                        string description = "No claimed tasks and no processing tasks are found.";
+                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok, -1);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                ServiceEventSource.Current.ErrorMessage("PostClusterPatchingStatus failed with exception {0}", ex.ToString());
+            }
+
+        }
+
+        /// <summary>
+        /// Post warning on cluster depending upon how ConsiderWarningAsError bool is set in cluster manifest.
+        /// </summary>
+        internal async Task PostWarningOnCoordinatorService(string warningDescription, int timeToLiveInMinutes)
+        {
+            bool considerWarningAsError = await CheckIfConsiderWarningAsErrorIsTrue();
+            if (considerWarningAsError)
+            {
+                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Ok, timeToLiveInMinutes);
+            }
+            else
+            {
+                HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, warningDescription, HealthState.Warning, timeToLiveInMinutes);
+            }
+        }
+
+        /// <summary>
+        /// Utility to find out ConsiderWarningAsError in Cluster manifest.
+        /// </summary>
+        private async Task<bool> CheckIfConsiderWarningAsErrorIsTrue()
+        {
+            string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
+            XmlDocument clusterManifest = new XmlDocument();
+            string val = GetParamValueFromSection(clusterManifest, "HealthManager/ClusterHealthPolicy", "ConsiderWarningAsError");
+            bool flag;
+            if(Boolean.TryParse(val, out flag))
+            {
+                return flag;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Utility to parse cluster manifest.
+        /// </summary>
+        /// <sectionName>Name of the sectionName to search.</sectionName>
+        /// <parameterName>Name of the parameter to search.</parameterName>
+        /// <return>the value of parameter</return>
+        public string GetParamValueFromSection(XmlDocument doc, string sectionName, string parameterName)
+        {
+            XmlNode sectionNode = doc.DocumentElement?.SelectSingleNode("//*[local-name()='Section' and @Name='" + sectionName + "']");
+            XmlNode parameterNode = sectionNode?.SelectSingleNode("//*[local-name()='Parameter' and @Name='" + parameterName + "']");
+            XmlAttribute attr = parameterNode?.Attributes?["Value"];
+            return attr?.Value;
+        }
+
+        /// <summary>
+        /// Used to clear the events on Coordinator Service for nodes which are deleted from cluster.
+        /// </summary>
+        public async Task ClearOrphanEvents(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Uri nodeAgentServiceUri = new Uri(NodeAgentServiceName);
+                ServiceHealth health = await this.fabricClient.HealthManager.GetServiceHealthAsync(nodeAgentServiceUri);
+                List<HealthEvent> healthEventsToCheck = new List<HealthEvent>();
+                foreach (var e in health.HealthEvents)
+                {
+                    if (e.HealthInformation.Property.Contains(WUOperationStatus) || e.HealthInformation.Property.Contains(WUOperationSetting))
+                    {
+                        healthEventsToCheck.Add(e);
+                    }
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+                List<string> orphanProperties = new List<string>();
+                Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
+                if (healthEventsToCheck.Count == 2*nodeList.Count)
+                {
+                    return;
+                }
+                else
+                {
+                    foreach (var node in nodeList)
+                    {
+                        propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
+                        propertyDict.Add(WUOperationSetting + "-" + node.NodeName, true);
+                    }
+                    foreach (var e in healthEventsToCheck)
+                    {
+                        if (!propertyDict.ContainsKey(e.HealthInformation.Property))
+                        {
+                            orphanProperties.Add(e.HealthInformation.Property);
+                        }
+                    }
+
+                    foreach (var property in orphanProperties)
+                    {
+                        ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
+
+                        string description = "This node is no longer part of the cluster.";
+                        HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, property, description, HealthState.Ok, 1);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                ServiceEventSource.Current.ErrorMessage("ClearOrphanEvents failed with exception {0}", ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Posts the cluster patching status by finding the nodes on which patching is going on.
+        /// </summary>
+        private async Task PostRMTaskNodeUpdate(CancellationToken cancellationToken)
+        {
+            NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
+            HashSet<string> processingNodes = new HashSet<string>();
+            HashSet<string> pendingNodes = new HashSet<string>();
+            IList<RepairTask> claimedTaskList = await this.GetClaimedRepairTasks(nodeList, cancellationToken);
+            foreach (var task in claimedTaskList)
+            {
+                pendingNodes.Add(task.Target.ToString());
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            RepairTaskList processingTaskListFinal = await this.GetRepairTasksUnderProcessing(cancellationToken);
+            foreach (var task in processingTaskListFinal)
+            {
+                processingNodes.Add(task.Target.ToString());
+            }
+
+            string pendingNodesString = string.Join(", ", pendingNodes);
+            string processingNodesString = string.Join(", ", processingNodes);
+            
+            if(String.IsNullOrEmpty(pendingNodesString))
+            {
+                pendingNodesString = "None";
+            }
+
+            if (String.IsNullOrEmpty(processingNodesString))
+            {
+                processingNodesString = "None";
+            }
+
+            string description = string.Format("Node currently being patched: {0} \n Nodes waiting to be patched: {1}", processingNodesString, pendingNodesString);
+            HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok);
+        }
+
         /// <summary>
         /// Gets the upgrade domain from current repair tasks under processing, ideally all the repair tasks under processing should've the same upgrade domain.
         /// However if repair tasks belonging to multiple UpgradeDomains are found, then we consider the UD of first repair task in the list of repair tasks.
@@ -371,6 +588,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     throw new InvalidOperationException(errorMessage);
                 }
             }
+
         }
 
         /// <summary>

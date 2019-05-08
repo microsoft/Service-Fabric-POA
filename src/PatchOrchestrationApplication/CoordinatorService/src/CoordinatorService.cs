@@ -1,25 +1,22 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using Microsoft.ServiceFabric.Data.Collections;
-using Microsoft.ServiceFabric.PatchOrchestration.Common;
-using Microsoft.ServiceFabric.Services.Runtime;
-
 namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 {
-    using System.Fabric.Description;
-    using System.Linq;
-
-    using TelemetryLib;
-
+    using System;
     using WebService;
-    using Services.Remoting.Runtime;
+    using System.Linq;
+    using TelemetryLib;
+    using System.Fabric;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Fabric.Description;
+    using System.Collections.Generic;
+    using Microsoft.ServiceFabric.Data.Collections;
+    using Microsoft.ServiceFabric.Services.Runtime;
+    using Microsoft.ServiceFabric.PatchOrchestration.Common;
+    using Microsoft.ServiceFabric.Services.Communication.Runtime;
+    using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 
     /// <summary>
     /// An instance of this class is created for each service replica by the Service Fabric runtime.
@@ -38,7 +35,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private string SettingsSectionName = "CoordinatorService";
         internal static string ResultsStoreName = "WindowsUpdateResults";
         private RepairManagerHelper rmHelper;
-
         private TelemetryEvents telemetryEvents;
 
         public CoordinatorService(StatefulServiceContext context)
@@ -99,7 +95,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <param name="cancellationToken"></param>
         /// <returns>Task for the async operation</returns>
         private async Task RunLoopAsync(CancellationToken cancellationToken)
-        {
+        {   
             while (true)
             {
                 if (await this.rmHelper.CheckRepairManagerStatus(cancellationToken))
@@ -113,6 +109,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     await this.rmHelper.TimeoutRepairTasks(cancellationToken);
                     // Cleanup the ResultStore in case it exceeds the quota
                     await this.CleanupWuOperationResult(cancellationToken);
+                    // This task will post updates of Repair tasks on the Coordinator Service.
+                    await this.rmHelper.PostClusterPatchingStatus(cancellationToken);
+                    // Clears the orphan event posted on coordinator service.
+                    await this.rmHelper.ClearOrphanEvents(cancellationToken);
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(this.pollingFrequencyInSec), cancellationToken);

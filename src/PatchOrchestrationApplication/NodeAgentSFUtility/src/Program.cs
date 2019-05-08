@@ -16,8 +16,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
                 string message = string.Format("NodeAgentSFUtility called with Arguments = {0}", string.Join(", ", args));
                 Console.WriteLine(message);
                 ServiceEventSource.Current.InfoMessage(message);
-
-                FabricClient fabricClient = new FabricClient();
+                FabricClientSettings settings = new FabricClientSettings();
+                settings.HealthReportSendInterval = TimeSpan.FromSeconds(0);
+                FabricClient fabricClient = new FabricClient(settings);
                 CommandProcessor commandProcessor = new CommandProcessor(fabricClient, ServiceEventSource.Current);
                 var task = commandProcessor.ProcessArguments(args);
                 task.Wait();

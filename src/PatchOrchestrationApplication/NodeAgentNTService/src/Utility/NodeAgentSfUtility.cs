@@ -88,7 +88,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         public bool UpdateInstallationStatus(NodeAgentSfUtilityExitCodes updateState, WindowsUpdateOperationResult operationResult = null, TimeSpan timeout = default(TimeSpan))
         {
             _eventSource.InfoMessage("Updating installation status : updateState : {0}, operationResult : {1}, timeout : {2}", updateState, operationResult, timeout);
-            this.ReportCurrentNodeStatus(operationResult);
             string filePath = Path.Combine(this._settingsManager.TempFolder , OperationResultFileName);
             string[] arguments;
 
@@ -134,7 +133,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         public bool UpdateSearchAndDownloadStatus(NodeAgentSfUtilityExitCodes updateState, WindowsUpdateOperationResult operationResult = null, TimeSpan timeout = default(TimeSpan))
         {            
             _eventSource.InfoMessage("Updating search and download  status : updateState : {0}, operationResult : {1}, timeout : {2}", updateState, operationResult, timeout);
-            this.ReportCurrentNodeStatus(operationResult);
             string filePath = Path.Combine(this._settingsManager.TempFolder, OperationResultFileName);
             string[] arguments;
 
@@ -172,31 +170,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         }
 
         /// <summary>
-        /// Posts latest operation status of the current node in the form of health report
-        /// </summary>
-        /// <returns></returns>
-        public void ReportCurrentNodeStatus(WindowsUpdateOperationResult result)
-        {
-            if (result != null && result.UpdateDetails != null)
-            {
-                StringBuilder message = new StringBuilder();
-                message.AppendFormat("{0} updates were {1} on {2}", result.UpdateDetails.Count,
-                    result.OperationType == WindowsUpdateOperationType.SearchAndDownload ? "downloaded" : "installed",
-                    result.OperationTime.ToString("dddd, dd MMMM yyyy"));
-
-                foreach (var update in result.UpdateDetails)
-                {
-                    message.AppendFormat("\nUpdateTitle : {0} , Result = {1}", update.Title, Enum.GetName(typeof(WuOperationResult), update.ResultCode));
-                }
-
-                message.AppendFormat("\nFor detailed results refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results");
-
-                this.ReportHealth("WindowsUpdateStatus", message.ToString(), HealthState.Ok, -1,
-                            TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
-            }
-        }
-
-        /// <summary>
         /// Report health for the NodeAgentService.
         /// If windows update operation is not successful after exhausting all reties, we'll post warning level health report
         /// If windows update operation is successful we'll post Ok level health report.
@@ -208,8 +181,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
         /// <returns>true if operation is success else false.</returns>
         public NodeAgentSfUtilityExitCodes ReportHealth(string healthProperty, string healthDescription, HealthState healthState, long timeToLiveInMinutes = -1, TimeSpan timeout = default(TimeSpan))
         {
-            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty, healthDescription, healthState, timeToLiveInMinutes, timeout);
-            string[] arguments = { "ReportHealth", this._applicationUri.ToString(), healthProperty + " - " + this._nodeName, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString()};
+            _eventSource.InfoMessage("reporting health : healthProperty : {0}, healthDescription : {1}, healthState : {2}, timeToLiveInMinutes : {3}, timeout : {4}", healthProperty + "-" + this._nodeName, healthDescription, healthState, timeToLiveInMinutes, timeout);
+            string[] arguments = { "ReportHealth", this._applicationUri.ToString(), healthProperty + "-" + this._nodeName, healthDescription, healthState.ToString(), timeToLiveInMinutes.ToString(), timeout.TotalSeconds.ToString()};
             ProcessExecutor processExecutor = new ProcessExecutor(SfUtilityFileName, CreateProcessArgument(arguments));
 
             long retries = 0;

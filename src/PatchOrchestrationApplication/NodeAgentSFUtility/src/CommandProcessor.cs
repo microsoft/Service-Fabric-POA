@@ -4,15 +4,15 @@
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
 {
     using System;
-    using System.Fabric;
-    using System.Fabric.Repair;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Common;
     using Helpers;
+    using System.IO;
+    using System.Linq;
+    using System.Fabric;
+    using System.Fabric.Repair;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// Utility for executing the commands which were specified in commandline parameter 
@@ -27,6 +27,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         private readonly CancellationTokenSource cancellationTokenSource;
 
         private const string ExecutorDataForNtServiceFileName = "ExecutorDataForNtService.txt";
+        private const string ServiceNameSuffix = "/NodeAgentService";
 
         /// <summary>
         /// Constructor for Command Processor
@@ -461,7 +462,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentSFUtility
         public NodeAgentSfUtilityExitCodes ReportHealth(Uri applicationName, String healthProperty, String healthDescription, HealthState healthState,
             long timeToLiveInMinutes, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeToLiveInMinutes);
+            NodeAgentSfUtilityExitCodes result = HealthManagerHelper.PostServiceHealthReport(this.fabricClient, applicationName, ServiceNameSuffix, healthProperty, healthDescription, (System.Fabric.Health.HealthState)healthState, timeout, timeToLiveInMinutes);
             ServiceEventSource.Current.InfoMessage("CommandProcessor.ReportHealth returned {0}", result);
             return result;
         }
