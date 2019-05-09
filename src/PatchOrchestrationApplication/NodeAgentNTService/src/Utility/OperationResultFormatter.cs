@@ -159,7 +159,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
 
         public override string ToString()
         {
-            return string.Format("update object: {0} , IsDownloaded : {1}, IsInstalled : {2}", Update, IsDownloaded, IsInstalled);
+            return string.Format("update object: {0} , IsDownloaded : {1}, IsInstalled : {2}, HResult", Update, IsDownloaded, IsInstalled, HResult);
         }
     }
 }
