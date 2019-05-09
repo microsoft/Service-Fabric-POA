@@ -1,4 +1,5 @@
 
+
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -27,7 +28,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib
         // Every time a new version of application would be release, manually update this version.
         // This application version is used for telemetry
         // For consistency keep this applicaiton version same as application version from application manifest.
-        private const string ApplicationVersion = "1.4.0";
+        private const string ApplicationVersion = "1.4.1";
 
         public TelemetryEvents(FabricClient fabricClient, ITelemetryEventSource eventSource)
         {
