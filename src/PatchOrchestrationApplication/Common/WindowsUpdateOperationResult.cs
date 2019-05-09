@@ -97,7 +97,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
             this.WindowsUpdateFrequency = windowsUpdateFrequency;
             this.WindowsUpdateQuery = windowsUpdateQuery;
             this.RebootRequired = rebootRequired;
-            this.OperationStartTime = OperationStartTime;
+            this.OperationStartTime = operationStartTime;
         }
 
         [DataMember]
