@@ -237,6 +237,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 try
                 {
                     string text = File.ReadAllText(LastUpdateOperationStartTimeStampFilePath).Trim();
+                    _eventSource.InfoMessage("Read LastOperationStartTimeStampFile with value : {0}", text);
                     return DateTime.ParseExact(text, "yyyyMMddHHmmss", null);
                 }
                 catch(Exception ex)
@@ -262,6 +263,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 return;
             }
             this.lastUpdateOperationStartTimeStamp = timeStamp;
+            _eventSource.InfoMessage("Updated LastOperationStartTimeStampFile with value : {0}", this.lastUpdateOperationStartTimeStamp);
         }
 
         /// <summary>
@@ -290,7 +292,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             File.Move(randomFilePath, lastOperationStartTimeStampFilePath);
             File.Delete(randomFilePath);
-            _eventSource.InfoMessage("LastOperationStartTimeStampFile written with timeStamp : {0}", this.lastUpdateOperationStartTimeStamp);
+            _eventSource.InfoMessage("LastOperationStartTimeStampFile written with timeStamp : {0}", timeStamp);
         }
 
         private string GetLastOperationStartTimeStampFilePath()
