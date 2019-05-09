@@ -487,7 +487,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 processingNodesString = "None";
             }
 
-            string description = string.Format("Node currently being patched: {0} \n Nodes waiting to be patched: {1}", processingNodesString, pendingNodesString);
+            string description = string.Format(" Node currently being patched: {0} \n Nodes waiting to be patched: {1}", processingNodesString, pendingNodesString);
             HealthManagerHelper.PostNodeHealthReport(fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok);
         }
 

@@ -63,7 +63,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("UpdateId : {0}, Title : {1} , Description : {2}, ResultCode : {3}", UpdateId, Title, Description, ResultCode);
+            return String.Format("UpdateId : {0}, Title : {1} , Description : {2}, ResultCode : {3}, HResult {4}", UpdateId, Title, Description, ResultCode, HResult);
         }
     }
 
@@ -185,8 +185,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         public override string ToString()
         {
             string windowsUpdateDetails = string.Join(",\n", UpdateDetails.Select(i => i.ToString()).ToArray());
-            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationTime {1}, OperationType {2}, UpdateDetails {3}, NodeName {4}, WindowsUpdateQuery {5}, WindowsUpdateFrequency {6}, RebootRequired {7}", 
-                                  OperationResult, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired);
+            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationTime {1}, OperationType {2}, UpdateDetails {3}, NodeName {4}, WindowsUpdateQuery {5}, WindowsUpdateFrequency {6}, RebootRequired {7}, OperationStartTime {8}", 
+                                  OperationResult, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired, OperationStartTime);
         }
     }
 }
