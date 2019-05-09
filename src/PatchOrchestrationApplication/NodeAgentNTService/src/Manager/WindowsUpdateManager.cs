@@ -231,18 +231,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         /// </summary>
         private DateTime ReadLastOperationStartTimeStamp()
         {
-            string LastUpdateOperationStartTimeStampFilePath = this.GetLastOperationStartTimeStampFilePath();
-            if (File.Exists(LastUpdateOperationStartTimeStampFilePath))
+            string lastUpdateOperationStartTimeStampFilePath = this.GetLastOperationStartTimeStampFilePath();
+            if (File.Exists(lastUpdateOperationStartTimeStampFilePath))
             {
                 try
                 {
-                    string text = File.ReadAllText(LastUpdateOperationStartTimeStampFilePath).Trim();
-                    _eventSource.InfoMessage("Read LastOperationStartTimeStampFile with value : {0}", text);
+                    string text = File.ReadAllText(lastUpdateOperationStartTimeStampFilePath).Trim();
                     return DateTime.ParseExact(text, "yyyyMMddHHmmss", null);
                 }
                 catch(Exception ex)
                 {
-                    _eventSource.WarningMessage(string.Format("LastOperationStartTimeStamp parsing failed with execption : ex {0}", ex.ToString()));
+                    _eventSource.WarningMessage(string.Format("lastOperationStartTimeStamp parsing failed with execption : ex {0}", ex.ToString()));
                 }
             }
             return default(DateTime);
@@ -262,7 +261,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 this._eventSource.WarningMessage(string.Format("WriteLastOperationStartTimeStamp failed with exception {0}", ex.ToString()));
             }
             this.lastUpdateOperationStartTimeStamp = timeStamp;
-            _eventSource.InfoMessage("Updated LastOperationStartTimeStampFile with value : {0}", this.lastUpdateOperationStartTimeStamp);
         }
 
         /// <summary>
@@ -362,7 +360,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             {
                                 _eventSource.InfoMessage("No Windows Update available. Completing the operation.");
                                 //Complete operation.
-                                _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                                 this._nodeAgentSfUtility.UpdateSearchAndDownloadStatus(
                                     NodeAgentSfUtilityExitCodes.OperationCompleted,
                                     this._operationResultFormatter.CreateSearchAndDownloadDummyResult(this.lastUpdateOperationStartTimeStamp),
@@ -377,7 +374,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                             WindowsUpdateOperationResult searchAndDownloadResult = this._operationResultFormatter.FormatSearchAndDownloadResult(downloadResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Search and download result: {0}", searchAndDownloadResult);
 
@@ -403,7 +399,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                             WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
@@ -440,7 +435,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         {
                             if (this._wuCollectionWrapper.Collection.Count == 0)
                             {
-                                _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                                 string msg =
                                     "Installation approved but no updates found to install. Completing the operation.";
                                 this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, msg, HealthState.Warning, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
@@ -459,7 +453,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                             WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
@@ -483,7 +476,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            _eventSource.InfoMessage("lastOperationStartTimeValue: {0}", this.lastUpdateOperationStartTimeStamp);
                             WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
