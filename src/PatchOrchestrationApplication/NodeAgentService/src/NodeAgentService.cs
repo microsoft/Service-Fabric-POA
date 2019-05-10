@@ -80,7 +80,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
         private void InitializeConfiguration(ConfigurationPackage package)
         {
             string settingsDestinationPath = this.GetLocalPathForApplication(package.Path) + NtServicePath + "Settings.xml";
-            NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath);
+            NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath, this.fabricClient, this.Context);
             if (package.Settings != null && package.Settings.Sections.Contains(settingsSectionName))
             {
                 this.ModifySettings(package.Settings.Sections[settingsSectionName]);

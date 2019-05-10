@@ -7,6 +7,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
     using System.Diagnostics;
     using System.Fabric;
     using System.Fabric.Description;
+    using System.Fabric.Health;
     using System.Xml;
 
     class NtServiceConfigurationUtility
@@ -18,13 +19,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
         /// </summary>
         /// <param name="package">configuration package object</param>
         /// <param name="filePath">file path where settings need to be stored</param>
-        internal static void CreateConfigurationForNtService(ConfigurationPackage package, string filePath)
+        internal static void CreateConfigurationForNtService(ConfigurationPackage package, string filePath, FabricClient fabricClient, ServiceContext serviceContext)
         {
             if (package.Settings != null && package.Settings.Sections.Contains(NtServiceSectionName))
             {
                 try
                 {
-                    ValidateNTServiceSettings(package.Settings.Sections[NtServiceSectionName]);
+                    ValidateNTServiceSettings(package.Settings.Sections[NtServiceSectionName], fabricClient, serviceContext);
                     ComposeSettingsXml(package.Settings.Sections[NtServiceSectionName], filePath);
                     ServiceEventSource.Current.InfoMessage("Successfully stored new settings at {0}", filePath);
                 }
@@ -36,7 +37,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
             }
         }
 
-        private static void ValidateNTServiceSettings(ConfigurationSection configurationSection)
+        private static void ValidateNTServiceSettings(ConfigurationSection configurationSection, FabricClient fabricClient, ServiceContext serviceContext)
         {
             if (configurationSection != null)
             {
@@ -44,54 +45,54 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                 string paramName = "WUOperationRetryCount";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
 
                 paramName = "WUDelayBetweenRetriesInMinutes";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "WUOperationTimeOutInMinutes";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "WURescheduleTimeInMinutes";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "WURescheduleCount";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "DisableWindowsUpdates";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "OperationTimeOutInMinutes";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<long>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "InstallWindowsOSOnlyUpdates";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
                 paramName = "AcceptWindowsUpdateEula";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value);
+                    ValidateParameter<bool>(paramName, configurationSection.Parameters[paramName].Value, fabricClient, serviceContext);
                 }
             }
         } 
 
 
-        private static void ValidateParameter<T> (string paramName, string value)
+        private static void ValidateParameter<T> (string paramName, string value, FabricClient fabricClient, ServiceContext serviceContext)
         {
             try
             {
@@ -102,6 +103,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                 if(ex is FormatException || ex is InvalidCastException || ex is OverflowException)
                 {
                     string errorMessage = string.Format("Value: {0} of Parameter : {0} is invalid", value, paramName);
+                    HealthManagerHelper.PostServiceHealthReport(fabricClient, serviceContext, NtServiceSectionName, errorMessage, HealthState.Error);
                     ServiceEventSource.Current.ErrorMessage(errorMessage);
                     throw new ArgumentException(errorMessage);
                 }
