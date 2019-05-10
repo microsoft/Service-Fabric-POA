@@ -88,7 +88,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
                     rebootRequired = !rebootRequired ? item.Update.RebootRequired : rebootRequired;
                 }
             }
-            return new WindowsUpdateOperationResult(this._nodeName, DateTime.UtcNow, MatchOperationResult(operationResultCode), details, operationType, wuQuery, wuFrequency, rebootRequired, operationStartTime);
+            return new WindowsUpdateOperationResult(this._nodeName, operationStartTime, DateTime.UtcNow, MatchOperationResult(operationResultCode), details, operationType, wuQuery, wuFrequency, rebootRequired);
         }
 
         private WuOperationResult MatchOperationResult(OperationResultCode operationResultCode)

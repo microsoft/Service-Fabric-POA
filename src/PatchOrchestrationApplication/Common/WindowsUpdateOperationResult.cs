@@ -87,10 +87,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
     [DataContract]
     public class WindowsUpdateOperationResult
     {
-        public WindowsUpdateOperationResult(String nodeName, DateTime operationTime, WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired, DateTime operationStartTime)
+        public WindowsUpdateOperationResult(String nodeName, DateTime operationStartTime, DateTime operationCompletionTime,  WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired)
         {
             this.NodeName = nodeName;
-            this.OperationTime = operationTime;
+            this.OperationTime = operationCompletionTime;
             this.UpdateDetails = updateDetails;
             this.OperationType = operationType;
             this.OperationResult = operationResult;
@@ -185,8 +185,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         public override string ToString()
         {
             string windowsUpdateDetails = string.Join(",\n", UpdateDetails.Select(i => i.ToString()).ToArray());
-            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationTime {1}, OperationType {2}, UpdateDetails {3}, NodeName {4}, WindowsUpdateQuery {5}, WindowsUpdateFrequency {6}, RebootRequired {7}, OperationStartTime {8}", 
-                                  OperationResult, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired, OperationStartTime);
+            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationStartTime {1}, OperationCompletionTime {2}, OperationType {3}, UpdateDetails {4}, NodeName {5}, WindowsUpdateQuery {6}, WindowsUpdateFrequency {7}, RebootRequired {8}", 
+                                  OperationResult, OperationStartTime, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired);
         }
     }
 }
