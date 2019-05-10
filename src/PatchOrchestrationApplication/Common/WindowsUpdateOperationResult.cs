@@ -49,14 +49,21 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         /// </summary>
         [DataMember]
         public WuOperationResult ResultCode;
-        
+
+        /// <summary>
+        /// HResult of the Windows update operation result
+        /// </summary>
+        [DataMember]
+        public int HResult;
+
+
         /// <summary>
         /// Verbose description of <see cref="WindowsUpdateDetail"/>.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("UpdateId : {0}, Title : {1} , Description : {2}, ResultCode : {3}", UpdateId, Title, Description, ResultCode);
+            return String.Format("UpdateId : {0}, Title : {1} , Description : {2}, ResultCode : {3}, HResult {4}", UpdateId, Title, Description, ResultCode, HResult);
         }
     }
 
@@ -80,16 +87,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
     [DataContract]
     public class WindowsUpdateOperationResult
     {
-        public WindowsUpdateOperationResult(String nodeName, DateTime operationTime, WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired)
+        public WindowsUpdateOperationResult(String nodeName, DateTime operationStartTime, DateTime operationCompletionTime,  WuOperationResult operationResult, IList<WindowsUpdateDetail> updateDetails, WindowsUpdateOperationType operationType, string windowsUpdateQuery, string windowsUpdateFrequency, bool rebootRequired)
         {
             this.NodeName = nodeName;
-            this.OperationTime = operationTime;
+            this.OperationTime = operationCompletionTime;
             this.UpdateDetails = updateDetails;
             this.OperationType = operationType;
             this.OperationResult = operationResult;
             this.WindowsUpdateFrequency = windowsUpdateFrequency;
             this.WindowsUpdateQuery = windowsUpdateQuery;
             this.RebootRequired = rebootRequired;
+            this.OperationStartTime = operationStartTime;
         }
 
         [DataMember]
@@ -100,6 +108,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
 
         [DataMember]
         public DateTime OperationTime { get; private set; }
+
+        [DataMember]
+        public DateTime OperationStartTime { get; private set; }
 
         [DataMember]
         public IList<WindowsUpdateDetail> UpdateDetails { get; private set; }
@@ -174,8 +185,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.Common
         public override string ToString()
         {
             string windowsUpdateDetails = string.Join(",\n", UpdateDetails.Select(i => i.ToString()).ToArray());
-            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationTime {1}, OperationType {2}, UpdateDetails {3}, NodeName {4}, WindowsUpdateQuery {5}, WindowsUpdateFrequency {6}, RebootRequired {7}", 
-                                  OperationResult, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired);
+            return string.Format("WindowsUpdateOperationResult : OperationResult {0} , OperationStartTime {1}, OperationCompletionTime {2}, OperationType {3}, UpdateDetails {4}, NodeName {5}, WindowsUpdateQuery {6}, WindowsUpdateFrequency {7}, RebootRequired {8}", 
+                                  OperationResult, OperationStartTime, OperationTime, OperationType, windowsUpdateDetails, NodeName, WindowsUpdateQuery, WindowsUpdateFrequency, RebootRequired);
         }
     }
 }

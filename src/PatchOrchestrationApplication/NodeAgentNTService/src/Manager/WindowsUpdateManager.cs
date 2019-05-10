@@ -30,6 +30,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         private WUCollectionWrapper _wuCollectionWrapper;
         private Task<bool> _task;
         private const string WUOperationStatus = "WUOperationStatus";
+        private const string LastUpdateOperationStartTimeStampFile = "LastUpdateOperationStartTimeStampFile.txt";
+        private DateTime lastUpdateOperationStartTimeStamp;
 
         /// <summary>
         /// Initializes the update manager.
@@ -44,6 +46,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             this._cancellationToken = cancellationToken;
             this._nodeAgentSfUtility = nodeAgentSfUtility;
             this.ResetManager();
+            this.lastUpdateOperationStartTimeStamp = this.ReadLastOperationStartTimeStamp();
         }
 
         /// <summary>
@@ -223,6 +226,77 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             WindowsServiceUtility.StopNtService(WindowsServiceUtility.FabricHostSvcName, _eventSource);
         }
 
+        /// <summary>
+        /// This method tries to read the last operation(download/install) start time saved in the file.
+        /// </summary>
+        private DateTime ReadLastOperationStartTimeStamp()
+        {
+            string lastUpdateOperationStartTimeStampFilePath = this.GetLastOperationStartTimeStampFilePath();
+            if (File.Exists(lastUpdateOperationStartTimeStampFilePath))
+            {
+                try
+                {
+                    string text = File.ReadAllText(lastUpdateOperationStartTimeStampFilePath).Trim();
+                    return DateTime.ParseExact(text, "yyyyMMddHHmmss", null);
+                }
+                catch(Exception ex)
+                {
+                    _eventSource.WarningMessage(string.Format("lastOperationStartTimeStamp parsing failed with execption : ex {0}", ex.ToString()));
+                }
+            }
+            return default(DateTime);
+        }
+
+        /// <summary>
+        /// This method tries to update the previous operation(download/install) start time saved in the file.
+        /// </summary>        
+        private void UpdateLastOperationStartTimeStamp(DateTime timeStamp)
+        {
+            try
+            {
+                this.WriteLastOperationStartTimeStamp(timeStamp);
+            }
+            catch(Exception ex)
+            {
+                this._eventSource.WarningMessage(string.Format("WriteLastOperationStartTimeStamp failed with exception {0}", ex.ToString()));
+            }
+            this.lastUpdateOperationStartTimeStamp = timeStamp;
+        }
+
+        /// <summary>
+        /// This method tries to write the previous operation(download/install) start time saved in the file.
+        /// </summary>
+        private void WriteLastOperationStartTimeStamp(DateTime timeStamp)
+        {
+            string randomFilePath = Path.Combine(this._settingsManager.TempFolder, Path.GetRandomFileName());
+            if(File.Exists(randomFilePath))
+            {
+                File.Delete(randomFilePath);
+            }
+
+            using (FileStream fs = File.Create(randomFilePath))
+            {
+                string text = timeStamp.ToString("yyyyMMddHHmmss");
+                Byte[] info = new System.Text.UTF8Encoding(true).GetBytes(text);
+                fs.Write(info, 0, info.Length);
+            }
+
+            string lastOperationStartTimeStampFilePath = this.GetLastOperationStartTimeStampFilePath();
+
+            if (File.Exists(lastOperationStartTimeStampFilePath))
+            {
+                File.Delete(lastOperationStartTimeStampFilePath);
+            }
+            File.Move(randomFilePath, lastOperationStartTimeStampFilePath);
+            File.Delete(randomFilePath);
+            _eventSource.InfoMessage("LastOperationStartTimeStampFile written with timeStamp : {0}", timeStamp);
+        }
+
+        private string GetLastOperationStartTimeStampFilePath()
+        {
+            return Path.Combine(this._settingsManager.DataFolder, LastUpdateOperationStartTimeStampFile);
+        }
+
         private void RestartSystem()
         {
             try
@@ -276,6 +350,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 case NodeAgentSfUtilityExitCodes.None:
                 case NodeAgentSfUtilityExitCodes.OperationCompleted:
                     {
+                        this.UpdateLastOperationStartTimeStamp(DateTime.UtcNow);
                         OperationResultCode searchResult = SearchUpdates(cancellationToken);
                         reschedule = (searchResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
@@ -287,7 +362,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 //Complete operation.
                                 this._nodeAgentSfUtility.UpdateSearchAndDownloadStatus(
                                     NodeAgentSfUtilityExitCodes.OperationCompleted,
-                                    this._operationResultFormatter.CreateSearchAndDownloadDummyResult(),
+                                    this._operationResultFormatter.CreateSearchAndDownloadDummyResult(this.lastUpdateOperationStartTimeStamp),
                                     utilityTaskTimeOut
                                 );
 
@@ -299,7 +374,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode downloadResult = DownloadUpdates(cancellationToken);
                             reschedule = (downloadResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            WindowsUpdateOperationResult searchAndDownloadResult = this._operationResultFormatter.FormatSearchAndDownloadResult(downloadResult, this._wuCollectionWrapper);
+                            WindowsUpdateOperationResult searchAndDownloadResult = this._operationResultFormatter.FormatSearchAndDownloadResult(downloadResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Search and download result: {0}", searchAndDownloadResult);
 
                             this._nodeAgentSfUtility.UpdateSearchAndDownloadStatus(NodeAgentSfUtilityExitCodes.DownloadCompleted, searchAndDownloadResult, utilityTaskTimeOut);
@@ -315,6 +390,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 break;
                             }
 
+                            this.UpdateLastOperationStartTimeStamp(DateTime.UtcNow);
                             wUStatusUpdate = string.Format("Windows update installation in progress.");
                             this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, wUStatusUpdate, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
@@ -323,7 +399,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper);
+                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
                             this._nodeAgentSfUtility.UpdateInstallationStatus(NodeAgentSfUtilityExitCodes.InstallationCompleted, installationResult, utilityTaskTimeOut);
@@ -339,6 +415,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             string WUDownloadComplete = string.Format("Windows updates downloaded, waiting for installation approval from Repair Manager.");
                             this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, WUDownloadComplete, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                         }
+
+
                         NodeAgentSfUtilityExitCodes exitCodes = this.WaitForInstallationApproval(cancellationToken);
                         if (exitCodes.Equals(NodeAgentSfUtilityExitCodes.Failure))
                         {
@@ -346,7 +424,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             reschedule = true;
                             break;
                         }
-
+                        this.UpdateLastOperationStartTimeStamp(DateTime.UtcNow);
                         string wUStatusUpdate = string.Format("Windows update installation in progress.");
                         this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, wUStatusUpdate, HealthState.Ok,-1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
@@ -364,7 +442,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                                 //Complete operation.
                                 this._nodeAgentSfUtility.UpdateInstallationStatus(
                                     NodeAgentSfUtilityExitCodes.OperationCompleted,
-                                    this._operationResultFormatter.CreateInstallationDummyResult(),
+                                    this._operationResultFormatter.CreateInstallationDummyResult(this.lastUpdateOperationStartTimeStamp),
                                     utilityTaskTimeOut
                                 );
                                 break;
@@ -375,7 +453,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper);
+                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
                             this._nodeAgentSfUtility.UpdateInstallationStatus(NodeAgentSfUtilityExitCodes.InstallationCompleted, installationResult, utilityTaskTimeOut);
@@ -398,7 +476,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                             OperationResultCode installResult = InstallUpdates(cancellationToken);
                             reschedule = (installResult != OperationResultCode.orcSucceeded ? true : reschedule);
 
-                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper);
+                            WindowsUpdateOperationResult installationResult = this._operationResultFormatter.FormatInstallationResult(installResult, this._wuCollectionWrapper, this.lastUpdateOperationStartTimeStamp);
                             _eventSource.InfoMessage("Installation result: {0}", installationResult);
 
                             this._nodeAgentSfUtility.UpdateInstallationStatus(NodeAgentSfUtilityExitCodes.InstallationCompleted, installationResult, utilityTaskTimeOut);
@@ -507,6 +585,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     var hResult = uResult.GetUpdateResult(i).HResult;
                     var updateID = updatesToInstall[i].Identity.UpdateID;
                     this._wuCollectionWrapper.Collection[updateID].IsInstalled = (hResult == 0);
+                    this._wuCollectionWrapper.Collection[updateID].HResult = hResult;
                     if (hResult != 0)
                     {
                         _eventSource.WarningMessage(string.Format("Install for update ID {0} returned hResult {1}", updateID, hResult));
@@ -644,6 +723,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     var hResult = uResult.GetUpdateResult(i).HResult;
                     var updateID = updatesToDownload[i].Identity.UpdateID;
                     this._wuCollectionWrapper.Collection[updateID].IsDownloaded = (hResult == 0);
+                    this._wuCollectionWrapper.Collection[updateID].HResult = hResult;
                     if (hResult != 0)
                     {
                         _eventSource.WarningMessage(string.Format("Download for update ID {0} returned hResult {1}", updateID, hResult));
