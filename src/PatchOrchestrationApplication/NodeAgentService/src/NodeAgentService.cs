@@ -91,7 +91,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                     this.ModifySettings(package.Settings.Sections[settingsSectionName]);
                 }
                 string healthMessage = "Settings validation was successful.";
-                HealthManagerHelper.PostServiceHealthReport(this.fabricClient, this.Context, SettingsValidationProperty, healthMessage, HealthState.Ok);
+                HealthManagerHelper.PostServiceHealthReport(this.fabricClient, this.Context, SettingsValidationProperty, healthMessage, HealthState.Ok, 1);
             }
             catch(Exception ex)
             {
