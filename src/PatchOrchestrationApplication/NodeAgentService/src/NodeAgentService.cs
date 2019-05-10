@@ -11,6 +11,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
     using System.Collections.Generic;
     using Microsoft.ServiceFabric.Services.Runtime;
     using Microsoft.ServiceFabric.Services.Communication.Runtime;
+    using System;
 
     /// <summary>
     /// Stateless agent service responsible for carrying out the actual patch work on each node.
@@ -80,11 +81,20 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
         private void InitializeConfiguration(ConfigurationPackage package)
         {
             string settingsDestinationPath = this.GetLocalPathForApplication(package.Path) + NtServicePath + "Settings.xml";
-            NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath, this.fabricClient, this.Context);
-            if (package.Settings != null && package.Settings.Sections.Contains(settingsSectionName))
+            try
             {
-                this.ModifySettings(package.Settings.Sections[settingsSectionName]);
+                NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath, this.fabricClient, this.Context);
+                if (package.Settings != null && package.Settings.Sections.Contains(settingsSectionName))
+                {
+                    this.ModifySettings(package.Settings.Sections[settingsSectionName]);
+                }
             }
+            catch(Exception ex)
+            {
+                ServiceEventSource.Current.ErrorMessage("InitializeConfiguration failed with exception: {0}", ex);
+
+            }
+            
         }
 
         private void ModifySettings(ConfigurationSection configurationSection)

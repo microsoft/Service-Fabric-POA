@@ -103,7 +103,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                 if(ex is FormatException || ex is InvalidCastException || ex is OverflowException)
                 {
                     string errorMessage = string.Format("Value: {0} of Parameter : {1} is invalid", value, paramName);
-                    HealthManagerHelper.PostServiceHealthReport(fabricClient, serviceContext, NtServiceSectionName, errorMessage, HealthState.Error, 1);
+                    HealthManagerHelper.PostServiceHealthReport(fabricClient, serviceContext, NtServiceSectionName, errorMessage, HealthState.Error);
                     ServiceEventSource.Current.ErrorMessage(errorMessage);
                     throw new ArgumentException(errorMessage);
                 }
