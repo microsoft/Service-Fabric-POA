@@ -117,11 +117,19 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         /// This is called from TimerManager, when the new Settings.xml. If timer task was running then it would be called with the task finishes.
         /// </summary>
         public void UpdateSettings(string filePath)
-        {                        
+        {       
             eventSource.InfoMessage("Updating Settings");
-            ServiceSettings serviceSettings = ParseServiceSettings(filePath);
-            CopyServiceSettings(serviceSettings);
-            eventSource.InfoMessage("Loaded new settings : {0}", this._serviceSettings);            
+            try
+            {
+                ServiceSettings serviceSettings = ParseServiceSettings(filePath);
+                CopyServiceSettings(serviceSettings);
+                eventSource.InfoMessage("Loaded new settings : {0}", this._serviceSettings);
+
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void CopyServiceSettings(ServiceSettings serviceSettings)

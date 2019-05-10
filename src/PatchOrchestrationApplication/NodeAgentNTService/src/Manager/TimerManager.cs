@@ -344,7 +344,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {   // create temporary copy of settings.xml             
                 this.CreateTempCopyOfSettingsFile();
 
-                this._settingsManager.UpdateSettings(this._settingsManager.TempCopyofSettingsFilePath);
+                try
+                {
+                    this._settingsManager.UpdateSettings(this._settingsManager.TempCopyofSettingsFilePath);
+                    string message = "Attempt to update settings was successful.";
+                    this._nodeAgentSfUtility.ReportHealth(WUOperationSetting, message, HealthState.Ok, 1);
+                }
+                catch(Exception ex)
+                {
+                    string healthWarning = string.Format("Attempt to update settings failed with exception ex: {0}", ex);
+                    this._nodeAgentSfUtility.ReportHealth(WUOperationSetting, healthWarning, HealthState.Warning);
+                }
 
                 //create checkpoint
                 this.CreateNewCheckpointFile(updateAttempted);
