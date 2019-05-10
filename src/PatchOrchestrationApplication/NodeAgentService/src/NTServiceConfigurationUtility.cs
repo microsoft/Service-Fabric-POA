@@ -13,6 +13,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
     class NtServiceConfigurationUtility
     {
         private const string NtServiceSectionName = "NTServiceSettings";
+        private const string SettingsValidationProperty = "SettingsValidation";
 
         /// <summary>
         /// Creates a configuration file for NT Service if NTServiceSettings section exists in Configuration Package
@@ -98,19 +99,12 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
             {
                 var outValue = (T)Convert.ChangeType(value, typeof(T));
             }
-            catch (Exception ex)
+            catch 
             {
-                if(ex is FormatException || ex is InvalidCastException || ex is OverflowException)
-                {
-                    string errorMessage = string.Format("Value: {0} of Parameter : {1} is invalid", value, paramName);
-                    HealthManagerHelper.PostServiceHealthReport(fabricClient, serviceContext, NtServiceSectionName, errorMessage, HealthState.Error);
-                    ServiceEventSource.Current.ErrorMessage(errorMessage);
-                    throw new ArgumentException(errorMessage);
-                }
-                else
-                {
-                    throw ex;
-                }
+                string errorMessage = string.Format("Value: {0} of Parameter : {1} is invalid", value, paramName);
+                HealthManagerHelper.PostServiceHealthReport(fabricClient, serviceContext, SettingsValidationProperty, errorMessage, HealthState.Error);
+                ServiceEventSource.Current.ErrorMessage(errorMessage);
+                throw new ArgumentException(errorMessage);   
             }
         }
 
