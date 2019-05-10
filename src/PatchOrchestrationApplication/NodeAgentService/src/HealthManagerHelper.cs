@@ -50,5 +50,33 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                     serviceContext.ReplicaOrInstanceId, healthInformation);
             fabricClient.HealthManager.ReportHealth(serviceInstanceHealthReport);
         }
+        /// <summary>
+        /// Posts a health report against the Node Agent Service.
+        /// </summary>
+        /// <param name="fabricClient">Fabric client to carry out HealthManager operation on cluster</param>
+        /// <param name="serviceContext">Context of the current service</param>
+        /// <param name="sourceId">SourceId for health report</param>
+        /// <param name="healthReportProperty">Property of the health report</param>
+        /// <param name="description">description of the health report</param>
+        /// <param name="healthState">HealthState for the health report</param>
+        /// <param name="timeToLiveInMinutes">Time to live for health report</param>
+        internal static void PostServiceHealthReport(FabricClient fabricClient, ServiceContext serviceContext, string healthReportProperty, string description,
+            HealthState healthState, long timeToLiveInMinutes = -1)
+        {
+            HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
+                healthState);
+            healthInformation.RemoveWhenExpired = true;
+            healthInformation.Description = description;
+            if (timeToLiveInMinutes >= 0)
+            {
+                healthInformation.TimeToLive = TimeSpan.FromMinutes(timeToLiveInMinutes);
+            }
+
+            HealthReportSendOptions sendOptions = new HealthReportSendOptions();
+            sendOptions.Immediate = true;
+
+            ServiceHealthReport serviceInstanceHealthReport = new ServiceHealthReport(serviceContext.ServiceName, healthInformation);
+            fabricClient.HealthManager.ReportHealth(serviceInstanceHealthReport, sendOptions);
+        }
     }
 }

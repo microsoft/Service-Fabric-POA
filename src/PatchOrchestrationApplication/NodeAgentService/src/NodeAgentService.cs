@@ -3,9 +3,11 @@
 
 namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
 {
+    using System;
     using System.IO;
     using System.Fabric;
     using System.Threading;
+    using System.Fabric.Health;
     using System.Threading.Tasks;
     using System.Fabric.Description;
     using System.Collections.Generic;
@@ -28,6 +30,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
         private const string NtServicePath = @"\NodeAgentNTService\";
         private const string HealthProperty = "Copy Settings.xml to NodeAgentNTService";
         private MonitorWindowsService monitorWindowsService = null;
+        private const string SettingsValidationProperty = "SettingsValidation";
 
         public NodeAgentService(StatelessServiceContext context)
             : base(context)
@@ -80,11 +83,22 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
         private void InitializeConfiguration(ConfigurationPackage package)
         {
             string settingsDestinationPath = this.GetLocalPathForApplication(package.Path) + NtServicePath + "Settings.xml";
-            NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath);
-            if (package.Settings != null && package.Settings.Sections.Contains(settingsSectionName))
+            try
             {
-                this.ModifySettings(package.Settings.Sections[settingsSectionName]);
+                NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath, this.fabricClient, this.Context);
+                if (package.Settings != null && package.Settings.Sections.Contains(settingsSectionName))
+                {
+                    this.ModifySettings(package.Settings.Sections[settingsSectionName]);
+                }
+                string healthMessage = "Settings validation was successful.";
+                HealthManagerHelper.PostServiceHealthReport(this.fabricClient, this.Context, SettingsValidationProperty, healthMessage, HealthState.Ok, 1);
             }
+            catch(Exception ex)
+            {
+                ServiceEventSource.Current.ErrorMessage("InitializeConfiguration failed with exception: {0}", ex);
+                this.Partition.ReportFault(FaultType.Permanent);
+            }
+            
         }
 
         private void ModifySettings(ConfigurationSection configurationSection)
@@ -94,23 +108,38 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
                 string paramName = "LogsDiskQuotaInMB";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    this.monitorWindowsService.LogsDiskQuotaInBytes = long.Parse(configurationSection.Parameters[paramName].Value) * 1024 * 1024;
+                    this.monitorWindowsService.LogsDiskQuotaInBytes = ValidateParameterAndReturnValue<long>(paramName, configurationSection.Parameters[paramName].Value) * 1024 * 1024;
                     ServiceEventSource.Current.VerboseMessage("Parameter : {0}, value : {1}", paramName, this.monitorWindowsService.LogsDiskQuotaInBytes);
                 }
 
                 paramName = "NtServiceWatchdogInMilliseconds";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    this.monitorWindowsService.NtServiceWatchdogInMilliseconds = long.Parse(configurationSection.Parameters[paramName].Value);
+                    this.monitorWindowsService.NtServiceWatchdogInMilliseconds = ValidateParameterAndReturnValue<long>(paramName, configurationSection.Parameters[paramName].Value);
                     ServiceEventSource.Current.VerboseMessage("Parameter : {0}, value : {1}", paramName, this.monitorWindowsService.NtServiceWatchdogInMilliseconds);
                 }
 
                 paramName = "PollingFrequencyInSeconds";
                 if (configurationSection.Parameters.Contains(paramName))
                 {
-                    this.monitorWindowsService.PollingFrequencyInSeconds = int.Parse(configurationSection.Parameters[paramName].Value);
+                    this.monitorWindowsService.PollingFrequencyInSeconds = ValidateParameterAndReturnValue<int>(paramName, configurationSection.Parameters[paramName].Value);
                     ServiceEventSource.Current.VerboseMessage("Parameter : {0}, value : {1}", paramName, this.monitorWindowsService.PollingFrequencyInSeconds);
                 }
+            }
+        }
+
+        private T ValidateParameterAndReturnValue<T>(string paramName, string value)
+        {
+            try
+            {
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            catch
+            {
+                string errorMessage = string.Format("Value: {0} of Parameter : {1} is invalid", value, paramName);
+                HealthManagerHelper.PostServiceHealthReport(this.fabricClient, this.Context, SettingsValidationProperty, errorMessage, HealthState.Error);
+                ServiceEventSource.Current.ErrorMessage(errorMessage);
+                throw new ArgumentException(errorMessage);
             }
         }
 
