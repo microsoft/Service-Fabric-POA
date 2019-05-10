@@ -119,17 +119,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         public void UpdateSettings(string filePath)
         {       
             eventSource.InfoMessage("Updating Settings");
-            try
-            {
-                ServiceSettings serviceSettings = ParseServiceSettings(filePath);
-                CopyServiceSettings(serviceSettings);
-                eventSource.InfoMessage("Loaded new settings : {0}", this._serviceSettings);
-
-            }
-            catch (Exception ex)
-            {
-
-            }
+            ServiceSettings serviceSettings = ParseServiceSettings(filePath);
+            CopyServiceSettings(serviceSettings);
+            eventSource.InfoMessage("Loaded new settings : {0}", this._serviceSettings);
         }
 
         private void CopyServiceSettings(ServiceSettings serviceSettings)
