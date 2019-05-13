@@ -347,7 +347,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 try
                 {
                     this._settingsManager.UpdateSettings(this._settingsManager.TempCopyofSettingsFilePath);
-                    string message = "Attempt to update settings was successful.";
+                    string message = "Successfully updated the settings.";
                     this._nodeAgentSfUtility.ReportHealth(WUOperationSetting, message, HealthState.Ok, 1);
                 }
                 catch(Exception ex)
