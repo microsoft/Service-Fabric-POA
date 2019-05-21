@@ -137,7 +137,7 @@ By default the script will create a `release` package of the application in `out
   . out\Release\Deploy.ps1 -ApplicationPackagePath 'out\Release\PatchOrchestrationApplication'  -ApplicationParameter @{ 'WURescheduleCount'='10'; 'WUFrequency'= 'Weekly, Tuesday, 12:22:32'; }
   ```
 > [!NOTE]
-> The above deployment procedure should only be used in case one wants to test changes made to this application. For production/test environment, one should always use the officially released version of the application. Application along with installation scripts can be downloaded from [Archive link](https://go.microsoft.com/fwlink/?linkid=869566). Deployment steps for this application can be found [here](https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#deploy-the-app)
+> The above deployment procedure should only be used in case one wants to test changes made to this application. For production/test environment, one should always use the officially released version of the application. Application along with installation scripts can be downloaded from [release](https://github.com/Microsoft/service-fabric-poa/releases/latest) section of this repo. Deployment steps for this application can be found [here](https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#deploy-the-app)
 
 
 # Contributing
