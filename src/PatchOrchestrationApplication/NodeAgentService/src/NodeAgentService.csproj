@@ -46,6 +46,9 @@
     <None Include="SetupEntryPoint.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="KillService.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NodeAgentNTService\src\NodeAgentNTService.csproj">
