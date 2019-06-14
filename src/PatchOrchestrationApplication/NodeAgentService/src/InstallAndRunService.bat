@@ -52,6 +52,8 @@ REM icacls %workingDir% /grant "Network Service":(OI)(CI)F /T
 
 REM Stop the service and uninstall the current version
 sc stop %serviceName%
+
+REM POSNodeSvc stucks sometimes while stopping. This will unblock that.
 taskkill /IM "NodeAgentNTService.exe" /F
 sc delete %serviceName%
 
