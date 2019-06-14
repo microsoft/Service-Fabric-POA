@@ -52,6 +52,7 @@ REM icacls %workingDir% /grant "Network Service":(OI)(CI)F /T
 
 REM Stop the service and uninstall the current version
 sc stop %serviceName%
+powershell -File "KillService.ps1"
 sc delete %serviceName%
 
 REM Cleanup the %workingDir% for all predecided folders.
