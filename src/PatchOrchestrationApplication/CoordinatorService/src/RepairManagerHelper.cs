@@ -632,7 +632,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     if (!nodeExists)
                     {
                         // If node does not exist now, there is no point in waiting on the task.
-                        await UpdateRepairTaskState(task, nodeName, RepairTaskState.Completed, executorData.ExecutorTimeoutInMinutes, cancellationToken, nodeExists);
+                        ServiceEventSource.Current.VerboseMessage("Cancelling repair task {0} which is in {1} state as the node {2} does not exist anymore.", task.TaskId, task.State, nodeName);
+                        await this.CancelRepairTask(task);
                         continue;
                     }
 
