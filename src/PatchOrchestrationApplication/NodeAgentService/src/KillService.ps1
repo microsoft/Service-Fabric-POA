@@ -1,10 +1,16 @@
-﻿$id = Get-WmiObject -Class Win32_Service -Filter "Name LIKE 'POSNodeSvc'" | Select-Object -ExpandProperty ProcessId
-if($id -ne $null)
-{
-   $process = Get-Process -Id $id
-   if($process.Id -ne $null)
+﻿try {
+   $id = Get-WmiObject -Class Win32_Service -Filter "Name LIKE 'POSNodeSvc'" | Select-Object -ExpandProperty ProcessId
+   if($id -ne $null)
    {
-      taskkill /F /PID $process.Id
-   }
+      $process = Get-Process -Id $id
+      if($process.Id -ne $null)
+      {
+         taskkill /F /PID $process.Id
+      }
+   }   
 }
+catch {
+   # do nothing.
+}
+
 
