@@ -443,17 +443,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 }
                 catch(Exception ex)
                 {
-                    if(ex is System.FormatException || ex is System.InvalidCastException)
-                    {
-                        _eventSource.ErrorMessage("TimerCheckPoint.txt is not in correct format. Content of the file : {0}, Exception thrown {1}", text, ex);
-                        File.Delete(checkpointFilepath);
-                    }
-                    else
-                    {
-                        // Delete the file and log exception.
-                        _eventSource.ErrorMessage("ReadCheckPointFile method failed with the exception {0}", ex);
-                        throw ex;
-                    }
+                    _eventSource.ErrorMessage("TimerCheckPoint.txt is not in correct format. Content of the file : {0}, Exception thrown {1}", text, ex);
+                    File.Delete(checkpointFilepath);
                 }
             }
             _eventSource.InfoMessage("Checkpoint file read: {0}", checkpointFileData);
