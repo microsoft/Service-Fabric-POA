@@ -451,7 +451,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     else
                     {
                         // Delete the file and log exception.
-                        _eventSource.ErrorMessage("ReadCheckPointFile method failed with the exception {0}", text);
+                        _eventSource.ErrorMessage("ReadCheckPointFile method failed with the exception {0}", ex);
                         throw ex;
                     }
                 }
