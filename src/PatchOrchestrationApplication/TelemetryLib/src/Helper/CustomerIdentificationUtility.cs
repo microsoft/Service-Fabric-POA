@@ -6,6 +6,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib.Helper
     using System;
     using System.Fabric;
     using System.Globalization;
+    using System.IO;
     using System.Threading.Tasks;
     using System.Xml;
 
@@ -22,21 +23,27 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib.Helper
     /// <summary>
     /// Helper class to facilitate identification of customer
     /// </summary>
-    public class CustomerIdentificationUtility
+    public class CustomerIdentificationUtility : IDisposable
     {
         private const string FabricRegistryKeyPath = "Software\\Microsoft\\Service Fabric";
-
-        private XmlDocument doc;
         private string paasClusterId;
         private string diagnosticsClusterId;
+        private StringReader sreader = null;
+        private readonly XmlDocument xdoc = null;
+        private XmlReader xreader = null;
 
         public CustomerIdentificationUtility(FabricClient fabricClient)
         {
             Task<string> task = fabricClient.ClusterManager.GetClusterManifestAsync();
             task.Wait();
             string clusterManifest = task.Result;
-            this.doc = new XmlDocument();
-            this.doc.LoadXml(clusterManifest);
+
+            // Safe XML pattern - *Do not use LoadXml*...
+            this.xdoc = new XmlDocument { XmlResolver = null };
+            this.sreader = new StringReader(clusterManifest);
+            this.xreader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null });
+
+            xdoc?.Load(xreader);
         }
 
         public void GetValuesFromClusterManifest()
@@ -53,7 +60,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib.Helper
         /// <returns></returns>
         public string GetParamValueFromSection(string sectionName, string parameterName)
         {
-            XmlNode sectionNode = this.doc.DocumentElement?.SelectSingleNode("//*[local-name()='Section' and @Name='" + sectionName + "']");
+            XmlNode sectionNode = this.xdoc.DocumentElement?.SelectSingleNode("//*[local-name()='Section' and @Name='" + sectionName + "']");
             XmlNode parameterNode = sectionNode?.SelectSingleNode("//*[local-name()='Parameter' and @Name='" + parameterName + "']");
             XmlAttribute attr = parameterNode?.Attributes?["Value"];
             return attr?.Value;
@@ -129,5 +136,39 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib.Helper
 
             return false;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (this.sreader != null)
+                    {
+                        this.sreader.Dispose();
+                        this.sreader = null;
+                    }
+
+                    if (this.xreader != null)
+                    {
+                        this.xreader.Dispose();
+                        this.xreader = null;
+                    }
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
+
+
     }
 }

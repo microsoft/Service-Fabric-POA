@@ -66,25 +66,33 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib
             string clusterType;
 
             CustomerIdentificationUtility customerIdentification = new CustomerIdentificationUtility(this.fabricClient);
-            if (customerIdentification.IsTelemtryDisabled() || string.IsNullOrEmpty(this.telemetryClient.InstrumentationKey))
-            {
-                this.eventSource.VerboseMessage("Skipping sending telemetry as Telemetry is disabled for this cluster");
-                return;
-            }
 
-            customerIdentification.GetClusterIdAndType(out clusterId, out tenantId, out clusterType);
-            this.PatchInstallationEvent(
-                clusterId,
-                tenantId,
-                clusterType,
-                ApplicationVersion,
-                nodeName,
-                updateFrequency,
-                updateQuery,
-                approvalPolicy,
-                totalInstallations,
-                successfulInstallations,
-                operationResult);
+            try
+            {
+                if (customerIdentification.IsTelemtryDisabled() || string.IsNullOrEmpty(this.telemetryClient.InstrumentationKey))
+                {
+                    this.eventSource.VerboseMessage("Skipping sending telemetry as Telemetry is disabled for this cluster");
+                    return;
+                }
+
+                customerIdentification.GetClusterIdAndType(out clusterId, out tenantId, out clusterType);
+                this.PatchInstallationEvent(
+                    clusterId,
+                    tenantId,
+                    clusterType,
+                    ApplicationVersion,
+                    nodeName,
+                    updateFrequency,
+                    updateQuery,
+                    approvalPolicy,
+                    totalInstallations,
+                    successfulInstallations,
+                    operationResult);
+            }
+            finally
+            {
+                customerIdentification?.Dispose();
+            }
         }
 
         private void PatchInstallationEvent(
