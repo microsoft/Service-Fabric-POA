@@ -443,17 +443,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 }
                 catch(Exception ex)
                 {
-                    if(String.IsNullOrWhiteSpace(text))
-                    {
-                        _eventSource.ErrorMessage("TimerCheckPoint.txt is empty, so, deleting the file");
-                        File.Delete(checkpointFilepath);
-                    }
-                    else
-                    {
-                        throw ex;
-                    }
+                    _eventSource.ErrorMessage("TimerCheckPoint.txt is not in correct format. Content of the file : {0}, Exception thrown {1}", text, ex);
+                    File.Delete(checkpointFilepath);
                 }
-                
             }
             _eventSource.InfoMessage("Checkpoint file read: {0}", checkpointFileData);
             return checkpointFileData;
