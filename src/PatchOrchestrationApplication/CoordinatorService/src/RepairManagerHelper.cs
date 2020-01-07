@@ -315,7 +315,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         // This means that repair tasks are not getting approved.
                         ClusterHealth clusterHealth = await this.fabricClient.HealthManager.GetClusterHealthAsync();
                         if (clusterHealth.AggregatedHealthState == HealthState.Error)
-                        {
+                        { 
                             // Reset Count
                             postUpdateCount = 0;
                             string warningDescription = " Cluster is currently unhealthy. Nodes are currently not getting patched by Patch Orchestration Application. Please ensure the cluster becomes healthy for patching to continue.";
@@ -356,7 +356,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     }
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 ServiceEventSource.Current.ErrorMessage("PostClusterPatchingStatus failed with exception {0}", ex.ToString());
             }
@@ -384,11 +384,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// </summary>
         private async Task<bool> CheckIfConsiderWarningAsErrorIsTrue()
         {
-            string manifestString = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
+            string manifestString  = await this.fabricClient.ClusterManager.GetClusterManifestAsync();
             XmlDocument clusterManifest = new XmlDocument();
             string val = GetParamValueFromSection(clusterManifest, "HealthManager/ClusterHealthPolicy", "ConsiderWarningAsError");
             bool flag;
-            if (Boolean.TryParse(val, out flag))
+            if(Boolean.TryParse(val, out flag))
             {
                 return flag;
             }
@@ -434,7 +434,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
                 List<string> orphanProperties = new List<string>();
                 Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
-                if (healthEventsToCheck.Count == 2 * nodeList.Count)
+                if (healthEventsToCheck.Count == 2*nodeList.Count)
                 {
                     return;
                 }
@@ -462,7 +462,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     }
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 ServiceEventSource.Current.ErrorMessage("ClearOrphanEvents failed with exception {0}", ex.ToString());
             }
@@ -490,8 +490,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
             string pendingNodesString = string.Join(", ", pendingNodes);
             string processingNodesString = string.Join(", ", processingNodes);
-
-            if (String.IsNullOrEmpty(pendingNodesString))
+            
+            if(String.IsNullOrEmpty(pendingNodesString))
             {
                 pendingNodesString = "None";
             }
@@ -553,70 +553,69 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             switch (RmPolicy)
             {
                 case TaskApprovalPolicy.NodeWise:
+                {
+                    RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
+                    if (!processingTaskList.Any())
                     {
-                        RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
-                        if (!processingTaskList.Any())
+                        RepairTask lastComplitedTask = (await this.GetComplitedRepairTasks(nodeList, cancellationToken))?.
+                                                                    OrderBy(task => task.CompletedTimestamp).
+                                                                    LastOrDefault();
+
+                        if (lastComplitedTask == null ||
+                            DateTime.UtcNow - lastComplitedTask.CompletedTimestamp > MinWaitTimeBetweenNodes)
                         {
-                            RepairTask lastComplitedTask = (await this.GetComplitedRepairTasks(nodeList, cancellationToken))?.
-                                                                       OrderBy(task => task.CompletedTimestamp).
-                                                                       LastOrDefault();
-
-                            if (lastComplitedTask == null ||
-                                DateTime.UtcNow - lastComplitedTask.CompletedTimestamp > MinWaitTimeBetweenNodes)
+                            if (claimedTaskList.Any())
                             {
-                                if (claimedTaskList.Any())
-                                {
-                                    RepairTask oldestClaimedTask = claimedTaskList.Aggregate(
-                                        (curMin, task) => (task.CreatedTimestamp < curMin.CreatedTimestamp ? task : curMin));
+                                RepairTask oldestClaimedTask = claimedTaskList.Aggregate(
+                                    (curMin, task) => (task.CreatedTimestamp < curMin.CreatedTimestamp ? task : curMin));
 
-                                    ServiceEventSource.Current.VerboseMessage(
-                                        "Out of {0} claimed tasks, Oldest repair task = {0} with node = {1} will be prepared",
-                                            claimedTaskList.Count, oldestClaimedTask.TaskId, oldestClaimedTask.Target);
-
-                                    this.StartPreparingRepairTask(oldestClaimedTask);
-                                }
-                            }
-                            else
-                            {
                                 ServiceEventSource.Current.VerboseMessage(
-                                        "Waiting for another {0} to pass in order to start the next node repair.", DateTime.UtcNow - lastComplitedTask.CompletedTimestamp);
+                                    "Out of {0} claimed tasks, Oldest repair task = {0} with node = {1} will be prepared",
+                                        claimedTaskList.Count, oldestClaimedTask.TaskId, oldestClaimedTask.Target);
 
+                                this.StartPreparingRepairTask(oldestClaimedTask);
                             }
                         }
-                        break;
-                    }
-
-                case TaskApprovalPolicy.UpgradeDomainWise:
-                    {
-                        string currentUpgradeDomain = await this.GetCurrentUpgradeDomainUnderProcessing(nodeList, cancellationToken);
-
-                        ServiceEventSource.Current.VerboseMessage(String.Format("{0} repair tasks were found in claimed state", claimedTaskList.Count));
-                        // Below line can be enabled for debugging
-                        // rmHelper.PrintRepairTasks(claimedTaskList);
-
-                        foreach (var claimedTask in claimedTaskList)
+                        else
                         {
-                            string udName = this.GetUpgradeDomainOfRepairTask(claimedTask, nodeList);
+                            ServiceEventSource.Current.VerboseMessage(
+                                    "Waiting for another {0} to pass in order to start the next node repair.", DateTime.UtcNow - lastComplitedTask.CompletedTimestamp);
 
-                            if (string.IsNullOrEmpty(currentUpgradeDomain))
-                            {
-                                currentUpgradeDomain = udName;
-                            }
-
-                            if (udName == currentUpgradeDomain)
-                            {
-                                this.StartPreparingRepairTask(claimedTask);
-                            }
                         }
-                        break;
                     }
+                    break;
+                }
+                case TaskApprovalPolicy.UpgradeDomainWise:
+                {
+                    string currentUpgradeDomain = await this.GetCurrentUpgradeDomainUnderProcessing(nodeList, cancellationToken);
+
+                    ServiceEventSource.Current.VerboseMessage(String.Format("{0} repair tasks were found in claimed state", claimedTaskList.Count));
+                    // Below line can be enabled for debugging
+                    // rmHelper.PrintRepairTasks(claimedTaskList);
+
+                    foreach (var claimedTask in claimedTaskList)
+                    {
+                        string udName = this.GetUpgradeDomainOfRepairTask(claimedTask, nodeList);
+
+                        if (string.IsNullOrEmpty(currentUpgradeDomain))
+                        {
+                            currentUpgradeDomain = udName;
+                        }
+
+                        if (udName == currentUpgradeDomain)
+                        {
+                            this.StartPreparingRepairTask(claimedTask);
+                        }
+                    }
+                    break;
+                }
 
                 default:
-                    {
-                        string errorMessage = String.Format("Illegal RmPolicy found: {0}", RmPolicy);
-                        ServiceEventSource.Current.ErrorMessage(errorMessage);
-                        throw new InvalidOperationException(errorMessage);
-                    }
+                {
+                    string errorMessage = String.Format("Illegal RmPolicy found: {0}", RmPolicy);
+                    ServiceEventSource.Current.ErrorMessage(errorMessage);
+                    throw new InvalidOperationException(errorMessage);
+                }
             }
 
         }
@@ -751,31 +750,31 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             {
                 case RepairTaskState.Restoring:
                 case RepairTaskState.Completed:
-                    {
-                        break;
-                    }
+                {
+                    break;
+                }
 
                 case RepairTaskState.Created:
                 case RepairTaskState.Claimed:
                 case RepairTaskState.Preparing:
-                    {
-                        await this.fabricClient.RepairManager.CancelRepairTaskAsync(task.TaskId, 0, true);
-                        break;
-                    }
+                {
+                    await this.fabricClient.RepairManager.CancelRepairTaskAsync(task.TaskId, 0, true);
+                    break;
+                }
 
                 case RepairTaskState.Approved:
                 case RepairTaskState.Executing:
-                    {
-                        task.State = RepairTaskState.Restoring;
-                        task.ResultStatus = RepairTaskResult.Cancelled;
-                        await this.fabricClient.RepairManager.UpdateRepairExecutionStateAsync(task);
-                        break;
-                    }
+                {
+                    task.State = RepairTaskState.Restoring;
+                    task.ResultStatus = RepairTaskResult.Cancelled;
+                    await this.fabricClient.RepairManager.UpdateRepairExecutionStateAsync(task);
+                    break;
+                }
 
                 default:
-                    {
-                        throw new Exception(string.Format("Repair task {0} in invalid state {1}", task.TaskId, task.State));
-                    }
+                {
+                    throw new Exception(string.Format("Repair task {0} in invalid state {1}", task.TaskId, task.State));
+                }
             }
         }
     }
