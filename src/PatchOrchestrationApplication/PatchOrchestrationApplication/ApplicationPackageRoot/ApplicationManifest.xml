@@ -21,9 +21,9 @@
       all the nodes belonging to an upgrade domain can go for windows update)
     -->
     <Parameter Name="TaskApprovalPolicy" DefaultValue="NodeWise" />
-    <!-- Min time to wait before starting to repair a new node after compliting to repair one.
+    <!-- Min time to wait before starting to repair a new node after Completing to repair one.
     Allowed values are TimeSpan parsed values-->
-    <Parameter Name="MinWaitTimeBetweenNodes" DefaultValue="" />
+    <Parameter Name="MinWaitTimeBetweenNodes" DefaultValue="0" />
     <!-- Maximum size of PatchOrchestrationApplication logs in MB, which can be persisted locally on node -->
     <Parameter Name="LogsDiskQuotaInMB" DefaultValue="1024" />
     <!-- Query to get windows updates, refer to criteria field at https://msdn.microsoft.com/en-us/library/windows/desktop/aa386526(v=vs.85).aspx for more details -->

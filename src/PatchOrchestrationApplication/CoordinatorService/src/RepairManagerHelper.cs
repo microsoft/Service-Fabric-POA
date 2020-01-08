@@ -40,7 +40,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string WUOperationSetting = "WUOperationSetting";
 
         /// <summary>
-        /// Min time to wait before starting to repair a new node after compliting to repair one.
+        /// Min time to wait before starting to repair a new node after Completing to repair one.
         /// </summary>
         internal TimeSpan MinWaitTimeBetweenNodes = TimeSpan.MinValue;
 
@@ -178,7 +178,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             return selectedRepairTasks;
         }
 
-        private async Task<IList<RepairTask>> GetComplitedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
+        private async Task<IList<RepairTask>> GetCompletedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
         {
             IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
                 RepairTaskStateFilter.Completed,
@@ -557,14 +557,15 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     RepairTaskList processingTaskList = await this.GetRepairTasksUnderProcessing(cancellationToken);
                     if (!processingTaskList.Any())
                     {
-                        RepairTask lastComplitedTask = (await this.GetComplitedRepairTasks(nodeList, cancellationToken))?.
-                                                                    OrderBy(task => task.CompletedTimestamp).
-                                                                    LastOrDefault();
-
-                        if (lastComplitedTask == null ||
-                            DateTime.UtcNow - lastComplitedTask.CompletedTimestamp > MinWaitTimeBetweenNodes)
+                        if (claimedTaskList.Any())
                         {
-                            if (claimedTaskList.Any())
+                            RepairTask lastCompletedTask = (await this.GetCompletedRepairTasks(nodeList, cancellationToken))?.Aggregate(
+                                    (curMax, task) => (task.CompletedTimestamp > curMax.CompletedTimestamp ? task : curMax));
+
+                            TimeSpan? timePastAfterCompletedTask = DateTime.UtcNow - lastCompletedTask?.CompletedTimestamp;
+
+                            if (!timePastAfterCompletedTask.HasValue ||
+                                 timePastAfterCompletedTask.Value > MinWaitTimeBetweenNodes)
                             {
                                 RepairTask oldestClaimedTask = claimedTaskList.Aggregate(
                                     (curMin, task) => (task.CreatedTimestamp < curMin.CreatedTimestamp ? task : curMin));
@@ -574,13 +575,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                                         claimedTaskList.Count, oldestClaimedTask.TaskId, oldestClaimedTask.Target);
 
                                 this.StartPreparingRepairTask(oldestClaimedTask);
-                            }
-                        }
-                        else
-                        {
-                            ServiceEventSource.Current.VerboseMessage(
-                                    "Waiting for another {0} to pass in order to start the next node repair.", MinWaitTimeBetweenNodes - (DateTime.UtcNow - lastComplitedTask.CompletedTimestamp));
 
+                            }
+                            else
+                            {
+                                ServiceEventSource.Current.VerboseMessage(
+                                        "Waiting for another {0} to pass in order to start the next repair task.", MinWaitTimeBetweenNodes - timePastAfterCompletedTask.Value);
+
+                            }
                         }
                     }
                     break;
