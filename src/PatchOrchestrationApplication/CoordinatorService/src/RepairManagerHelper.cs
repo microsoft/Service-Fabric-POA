@@ -579,7 +579,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         else
                         {
                             ServiceEventSource.Current.VerboseMessage(
-                                    "Waiting for another {0} to pass in order to start the next node repair.", DateTime.UtcNow - lastComplitedTask.CompletedTimestamp);
+                                    "Waiting for another {0} to pass in order to start the next node repair.", MinWaitTimeBetweenNodes - (DateTime.UtcNow - lastComplitedTask.CompletedTimestamp));
 
                         }
                     }
