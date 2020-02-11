@@ -418,7 +418,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 cancellationToken.ThrowIfCancellationRequested();
 
                 NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
-                List<string> orphanProperties = new List<string>();
                 Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
                 if (healthEventsToCheck.Count == 2*nodeList.Count)
                 {
@@ -435,16 +434,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         if (!propertyDict.ContainsKey(e.HealthInformation.Property))
                         {
-                            orphanProperties.Add(e.HealthInformation.Property);
+                            ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService by updating TTL to 1 minute.", e.HealthInformation.Property);
+                            HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.Property, e.HealthInformation.Description, HealthState.Ok, 1);
                         }
-                    }
-
-                    foreach (var property in orphanProperties)
-                    {
-                        ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
-
-                        string description = "This node is no longer part of the cluster.";
-                        HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, property, description, HealthState.Ok, 1);
                     }
                 }
             }
