@@ -26,20 +26,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         internal static void PostNodeHealthReport(FabricClient fabricClient, Uri serviceUri, string healthReportProperty, string description,
             HealthState healthState, long timeToLiveInMinutes = -1)
         {
-            HealthInformation healthInformation = new HealthInformation(SourceId, healthReportProperty,
-                healthState)
-            {
-                RemoveWhenExpired = true,
-                Description = description
-            };
-
-            if (timeToLiveInMinutes >= 0)
-            {
-                healthInformation.TimeToLive = TimeSpan.FromMinutes(timeToLiveInMinutes);
-            }
-
-            ServiceHealthReport serviceHealthReport = new ServiceHealthReport(serviceUri, healthInformation);
-            fabricClient.HealthManager.ReportHealth(serviceHealthReport);
+            PostNodeHealthReport(fabricClient, serviceUri, SourceId, healthReportProperty, description, healthState, timeToLiveInMinutes);
         }
 
         /// <summary>
@@ -52,7 +39,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <param name="description">Description of the health report</param>
         /// <param name="healthState">HealthState for the health report</param>
         /// <param name="timeToLiveInMinutes">Time to live in minutes for health report</param>
-        internal static void UpdateHealthReport(FabricClient fabricClient, Uri serviceUri, string sourceId, string healthReportProperty, string description,
+        internal static void PostNodeHealthReport(FabricClient fabricClient, Uri serviceUri, string sourceId, string healthReportProperty, string description,
             HealthState healthState, long timeToLiveInMinutes = -1)
         {
             HealthInformation healthInformation = new HealthInformation(sourceId, healthReportProperty,
