@@ -1,7 +1,7 @@
 ﻿@echo off
 setlocal enabledelayedexpansion
 
-set rootDir=%~d0
+set rootDir=%SystemDrive%
 set currentDir=%cd%
 set applicationDir=%rootDir%\PatchOrchestrationApplication
 set workingDir=%applicationDir%\NodeAgentNTService
