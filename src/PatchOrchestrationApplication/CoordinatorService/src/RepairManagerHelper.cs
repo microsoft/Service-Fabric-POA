@@ -430,12 +430,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
                         propertyDict.Add(WUOperationSetting + "-" + node.NodeName, true);
                     }
+
+                    string NodeNotPartOfClusterDescription = "This node is no longer part of the cluster. TTL of health event updated to 1 minute.";
                     foreach (var e in healthEventsToCheck)
                     {
                         if (!propertyDict.ContainsKey(e.HealthInformation.Property))
                         {
                             ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService by updating TTL to 1 minute.", e.HealthInformation.Property);
-                            HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.Property, e.HealthInformation.Description, HealthState.Ok, 1);
+                            HealthManagerHelper.UpdateHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.SourceId, e.HealthInformation.Property, NodeNotPartOfClusterDescription, HealthState.Ok, 1);
                         }
                     }
                 }
