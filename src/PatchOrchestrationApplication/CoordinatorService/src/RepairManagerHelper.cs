@@ -437,7 +437,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         if (!propertyDict.ContainsKey(e.HealthInformation.Property))
                         {
                             ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService by updating TTL to 1 minute.", e.HealthInformation.Property);
-                            HealthManagerHelper.UpdateHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.SourceId, e.HealthInformation.Property, NodeNotPartOfClusterDescription, HealthState.Ok, 1);
+                            HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.SourceId, e.HealthInformation.Property, NodeNotPartOfClusterDescription, HealthState.Ok, 1);
                         }
                     }
                 }
