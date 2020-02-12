@@ -418,7 +418,6 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                 cancellationToken.ThrowIfCancellationRequested();
 
                 NodeList nodeList = await this.fabricClient.QueryManager.GetNodeListAsync(null, null, this.DefaultTimeoutForOperation, cancellationToken);
-                List<string> orphanProperties = new List<string>();
                 Dictionary<string, bool> propertyDict = new Dictionary<string, bool>();
                 if (healthEventsToCheck.Count == 2*nodeList.Count)
                 {
@@ -431,20 +430,15 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         propertyDict.Add(WUOperationStatus + "-" + node.NodeName, true);
                         propertyDict.Add(WUOperationSetting + "-" + node.NodeName, true);
                     }
+
+                    string NodeNotPartOfClusterDescription = "This node is no longer part of the cluster.";
                     foreach (var e in healthEventsToCheck)
                     {
                         if (!propertyDict.ContainsKey(e.HealthInformation.Property))
                         {
-                            orphanProperties.Add(e.HealthInformation.Property);
+                            ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService by updating TTL to 1 minute.", e.HealthInformation.Property);
+                            HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, e.HealthInformation.SourceId, e.HealthInformation.Property, NodeNotPartOfClusterDescription, HealthState.Ok, 1);
                         }
-                    }
-
-                    foreach (var property in orphanProperties)
-                    {
-                        ServiceEventSource.Current.VerboseMessage("Property {0}'s event is removed from CoordinatorService", property);
-
-                        string description = "This node is no longer part of the cluster.";
-                        HealthManagerHelper.PostNodeHealthReport(fabricClient, nodeAgentServiceUri, property, description, HealthState.Ok, 1);
                     }
                 }
             }
