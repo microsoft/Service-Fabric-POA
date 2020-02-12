@@ -431,7 +431,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         propertyDict.Add(WUOperationSetting + "-" + node.NodeName, true);
                     }
 
-                    string NodeNotPartOfClusterDescription = "This node is no longer part of the cluster. TTL of health event updated to 1 minute.";
+                    string NodeNotPartOfClusterDescription = "This node is no longer part of the cluster. This health event will expire in 1 minute.";
                     foreach (var e in healthEventsToCheck)
                     {
                         if (!propertyDict.ContainsKey(e.HealthInformation.Property))
