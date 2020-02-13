@@ -282,6 +282,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     this.rmHelper.GraceTimeForNtService = TimeSpan.FromMinutes(int.Parse(configurationSection.Parameters[paramName].Value));
                     ServiceEventSource.Current.VerboseMessage("Parameter : {0}, value : {1}", paramName, this.rmHelper.GraceTimeForNtService);
                 }
+
+                paramName = "MinWaitTimeBetweenNodes";
+                if (configurationSection.Parameters.Contains(paramName))
+                {
+                    this.rmHelper.MinWaitTimeBetweenNodes = TimeSpan.Parse(configurationSection.Parameters[paramName].Value);
+                    ServiceEventSource.Current.VerboseMessage("Parameter : {0}, value : {1}", paramName, this.rmHelper.MinWaitTimeBetweenNodes);
+                }
             }
         }
     }

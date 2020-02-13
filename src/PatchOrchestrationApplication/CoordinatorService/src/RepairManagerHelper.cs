@@ -40,6 +40,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         private const string WUOperationSetting = "WUOperationSetting";
 
         /// <summary>
+        /// Min time to wait before starting to repair a new node after Completing to repair one.
+        /// </summary>
+        internal TimeSpan MinWaitTimeBetweenNodes = TimeSpan.MinValue;
+
+        /// <summary>
         /// Default timeout for async operations
         /// Default timeout for async operations
         /// </summary>
@@ -171,6 +176,15 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
             }
 
             return selectedRepairTasks;
+        }
+
+        private async Task<IList<RepairTask>> GetCompletedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
+        {
+            IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
+                RepairTaskStateFilter.Completed,
+                ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
+
+            return repairTasks;
         }
 
         /// <summary>
@@ -539,17 +553,34 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         if (claimedTaskList.Any())
                         {
-                            RepairTask oldestClaimedTask = claimedTaskList.Aggregate(
-                                (curMin, task) => (task.CreatedTimestamp < curMin.CreatedTimestamp ? task : curMin));
-                            ServiceEventSource.Current.VerboseMessage(
-                                "Out of {0} claimed tasks, Oldest repair task = {0} with node = {1} will be prepared",
-                                    claimedTaskList.Count, oldestClaimedTask.TaskId, oldestClaimedTask.Target);
-                            this.StartPreparingRepairTask(oldestClaimedTask);
+                            RepairTask lastCompletedTask = (await this.GetCompletedRepairTasks(nodeList, cancellationToken))?.Aggregate(
+                                    (curMax, task) => (task.CompletedTimestamp > curMax.CompletedTimestamp ? task : curMax));
+
+                            TimeSpan? timePastAfterCompletedTask = DateTime.UtcNow - lastCompletedTask?.CompletedTimestamp;
+
+                            if (!timePastAfterCompletedTask.HasValue ||
+                                 timePastAfterCompletedTask.Value > MinWaitTimeBetweenNodes)
+                            {
+                                RepairTask oldestClaimedTask = claimedTaskList.Aggregate(
+                                    (curMin, task) => (task.CreatedTimestamp < curMin.CreatedTimestamp ? task : curMin));
+
+                                ServiceEventSource.Current.VerboseMessage(
+                                    "Out of {0} claimed tasks, Oldest repair task = {0} with node = {1} will be prepared",
+                                        claimedTaskList.Count, oldestClaimedTask.TaskId, oldestClaimedTask.Target);
+
+                                this.StartPreparingRepairTask(oldestClaimedTask);
+
+                            }
+                            else
+                            {
+                                ServiceEventSource.Current.VerboseMessage(
+                                        "Waiting for another {0} to pass in order to start the next repair task.", MinWaitTimeBetweenNodes - timePastAfterCompletedTask.Value);
+
+                            }
                         }
                     }
                     break;
                 }
-
                 case TaskApprovalPolicy.UpgradeDomainWise:
                 {
                     string currentUpgradeDomain = await this.GetCurrentUpgradeDomainUnderProcessing(nodeList, cancellationToken);

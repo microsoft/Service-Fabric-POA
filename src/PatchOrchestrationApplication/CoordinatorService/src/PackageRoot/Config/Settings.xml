@@ -24,5 +24,10 @@
       all the nodes belonging to an upgrade domain can go for windows update)
     -->
     <Parameter Name="TaskApprovalPolicy" Value="" MustOverride="true" />
+
+    <!-- Min time to wait before starting to repair a new node after Completing to repair one.
+    Allowed values are TimeSpan parsed values
+    -->
+    <Parameter Name="MinWaitTimeBetweenNodes" Value="0" MustOverride="true" />
   </Section>
 </Settings>
