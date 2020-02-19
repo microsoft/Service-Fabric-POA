@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set rootDir=%SystemDrive%
-set oldrootDir=D:
+set oldrootDir=%~d0
 set currentDir=%cd%
 set oldApplicationDir=%oldrootDir%\PatchOrchestrationApplication
 set applicationDir=%rootDir%\PatchOrchestrationApplication
@@ -64,12 +64,11 @@ REM Cleanup the %workingDir% for all predecided folders.
 copy "%currentDir%\*.*" "%workingDir%"
 
 if EXIST "%oldApplicationDir%\NodeAgentNTService\Data" (
-    ECHO "Coming here"
     if NOT EXIST "%applicationDir%\NodeAgentNTService\Data" (
          mkdir "%applicationDir%\NodeAgentNTService\Data"
     )   
     copy %oldApplicationDir%\NodeAgentNTService\Data %applicationDir%\NodeAgentNTService\Data
-    rmdir "%oldApplicationDir%"
+    rmdir /s /q "%oldApplicationDir%"
 )
 echo "Installing %serviceName%"
 sc create %serviceName% binPath= "%serviceExe% %Fabric_NodeName%  %Fabric_ApplicationName%" start= delayed-auto
