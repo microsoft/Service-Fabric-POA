@@ -56,7 +56,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
             ICodePackageActivationContext activationContext = this.Context.CodePackageActivationContext;
             ConfigurationPackage configurationPackage = activationContext.GetConfigurationPackageObject("Config");
 
-            string logsFolderPath = this.GetLocalPathForApplication(configurationPackage.Path) + @"\logs";
+            string logsFolderPath = this.GetLocalPathForApplication() + @"\logs";
             this.monitorWindowsService = new MonitorWindowsService(this.fabricClient, this.Context, logsFolderPath);
 
             this.InitializeConfiguration(configurationPackage);
@@ -82,7 +82,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
 
         private void InitializeConfiguration(ConfigurationPackage package)
         {
-            string settingsDestinationPath = this.GetLocalPathForApplication(package.Path) + NtServicePath + "Settings.xml";
+            string settingsDestinationPath = this.GetLocalPathForApplication() + NtServicePath + "Settings.xml";
             try
             {
                 NtServiceConfigurationUtility.CreateConfigurationForNtService(package, settingsDestinationPath, this.fabricClient, this.Context);
@@ -143,10 +143,9 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService
             }
         }
 
-        private string GetLocalPathForApplication(string configPath)
+        private string GetLocalPathForApplication()
         {
-            FileInfo f = new FileInfo(configPath);
-            return Path.GetPathRoot(f.FullName) + @"\PatchOrchestrationApplication";
+            return Path.GetPathRoot(Environment.SystemDirectory) + @"\PatchOrchestrationApplication";
         }
     }
 }
