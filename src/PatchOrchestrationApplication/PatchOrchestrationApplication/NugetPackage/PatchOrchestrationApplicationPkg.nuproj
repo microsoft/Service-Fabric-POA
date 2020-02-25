@@ -16,7 +16,7 @@
   <PropertyGroup Label="Configuration">
     <Id>ServiceFabric.PatchOrchestrationApplication</Id>
     <Title>ServiceFabric.PatchOrchestrationApplication</Title>
-    <Version>1.4.1</Version>
+    <Version>1.4.2</Version>
     <Authors>brkhande;raunakp</Authors>
     <Owners>brkhande;raunakp</Owners>
     <Description>This package contains Service Fabric Patch Orchestration Application.</Description>
