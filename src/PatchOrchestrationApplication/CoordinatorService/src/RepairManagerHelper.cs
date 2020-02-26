@@ -553,8 +553,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         if (claimedTaskList.Any())
                         {
-                            RepairTask lastCompletedTask = (await this.GetCompletedRepairTasks(nodeList, cancellationToken))?.Aggregate(
-                                    (curMax, task) => (task.CompletedTimestamp > curMax.CompletedTimestamp ? task : curMax));
+                            RepairTask lastCompletedTask = (await this.GetCompletedRepairTasks(nodeList, cancellationToken))?.OrderByDescending(
+	                            task => task.CompletedTimestamp).FirstOrDefault();
 
                             TimeSpan? timePastAfterCompletedTask = DateTime.UtcNow - lastCompletedTask?.CompletedTimestamp;
 
