@@ -237,6 +237,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         if (this._windowsUpdateManager.ResetStateMachine())
                         {
                             this.UpdateSettingsAndCreateCheckpoint();
+                            this.CreateNewCheckpointFile();
                         }
                         else
                         {
