@@ -558,7 +558,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                                 if (completedTasks.Any())
                                 {
                                     RepairTask lastCompletedTask = completedTasks.Aggregate((curMax, task) => (task.CompletedTimestamp > curMax.CompletedTimestamp ? task : curMax));
-                                    timePastAfterCompletedTask = DateTime.UtcNow - lastCompletedTask.CompletedTimestamp;
+                                    timePastAfterCompletedTask = DateTime.UtcNow - lastCompletedTask?.CompletedTimestamp;
                                 }
 
 
