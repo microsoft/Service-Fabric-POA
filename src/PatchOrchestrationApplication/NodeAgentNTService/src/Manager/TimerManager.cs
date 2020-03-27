@@ -491,8 +491,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             string settingsFilePath = this._settingsManager.SettingsFilePath;
 
-            string copyOfSettingsFileMd5 = GetMD5(copyOfSettingsFilePath);
-            string settingsFileMd5 = GetMD5(settingsFilePath);
+            string copyOfSettingsFileMd5 = GetHMACSHA1(copyOfSettingsFilePath);
+            string settingsFileMd5 = GetHMACSHA1(settingsFilePath);
             
             if (!copyOfSettingsFileMd5.Equals(settingsFileMd5))
             {
@@ -502,13 +502,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             return false;
         }
 
-        private string GetMD5(string filename)
+        private string GetHMACSHA1(string filename)
         {
-            using (var md5 = MD5.Create())
+            using (var hmac = HMACSHA1.Create())
             {
                 using (var stream = File.OpenRead(filename))
                 {
-                    return Encoding.Default.GetString(md5.ComputeHash(stream));
+                    return Encoding.Default.GetString(hmac.ComputeHash(stream));
                 }
             }
         }
