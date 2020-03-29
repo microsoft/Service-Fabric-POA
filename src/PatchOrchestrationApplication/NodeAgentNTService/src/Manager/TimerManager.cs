@@ -491,10 +491,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             string settingsFilePath = this._settingsManager.SettingsFilePath;
 
-            string copyOfSettingsFileMd5 = GetHMACSHA1(copyOfSettingsFilePath);
-            string settingsFileMd5 = GetHMACSHA1(settingsFilePath);
+            string copyOfSettingsFileHMAC = GetHMACSHA1(copyOfSettingsFilePath);
+            string settingsFileHMAC = GetHMACSHA1(settingsFilePath);
             
-            if (!copyOfSettingsFileMd5.Equals(settingsFileMd5))
+            if (!copyOfSettingsFileHMAC.Equals(settingsFileHMAC))
             {
                 _eventSource.InfoMessage("New Settings.xml found.");
                 return true;
