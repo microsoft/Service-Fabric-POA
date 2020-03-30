@@ -884,7 +884,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             {
                 return false;
             }
-            _eventSource.VerboseMessage(string.Format("category id : {0} parent of category id : {1}", category.CategoryID, category.Parent.CategoryID));
+            _eventSource.VerboseMessage(string.Format("category id : {0} is parent of category id : {1}", category.Parent.CategoryID, category.CategoryID));
             return CheckCategory(category.Parent);
         }
 
