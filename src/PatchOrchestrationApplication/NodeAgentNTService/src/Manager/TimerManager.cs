@@ -491,8 +491,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             string settingsFilePath = this._settingsManager.SettingsFilePath;
 
-            string copyOfSettingsFileHMAC = GetHMACSHA1(copyOfSettingsFilePath);
-            string settingsFileHMAC = GetHMACSHA1(settingsFilePath);
+            string copyOfSettingsFileHMAC = GetSHA512(copyOfSettingsFilePath);
+            string settingsFileHMAC = GetSHA512(settingsFilePath);
             
             if (!copyOfSettingsFileHMAC.Equals(settingsFileHMAC))
             {
@@ -502,13 +502,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             return false;
         }
 
-        private string GetHMACSHA1(string filename)
+        private string GetSHA512(string filename)
         {
-            using (var hmac = HMACSHA1.Create())
+            using (var sha = SHA512CryptoServiceProvider.Create())
             {
                 using (var stream = File.OpenRead(filename))
                 {
-                    return Encoding.Default.GetString(hmac.ComputeHash(stream));
+                    return Encoding.Default.GetString(sha.ComputeHash(stream));
                 }
             }
         }
