@@ -8,7 +8,7 @@ Param
     $ImageStoreConnectionString = "fabric:ImageStore",
 
     [string]
-    $ApplicationVersion = "1.4.4"
+    $ApplicationVersion = "1.4.5"
 )
 
 Remove-ServiceFabricApplication -ApplicationName fabric:/PatchOrchestrationApplication -Force
