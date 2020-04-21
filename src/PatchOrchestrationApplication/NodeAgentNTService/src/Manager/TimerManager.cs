@@ -638,6 +638,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                     return next;
                 }
 
+                case Frequency.MonthlyByWeekAndDay:
+                    {
+                        var next = new DateTime(currentTime.Year, currentTime.Month, settingsDateTime.Day,
+                            settingsDateTime.Hour, settingsDateTime.Minute, settingsDateTime.Second);
+                        if (DateTime.Compare(next, currentTime) < 0)
+                        {
+                            next = next.AddMonths(1);
+                        }
+                        return next;
+                    }
+
                 case Frequency.Weekly:
                     {
                         DateTime next = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, settingsDateTime.Hour, settingsDateTime.Minute, settingsDateTime.Second);

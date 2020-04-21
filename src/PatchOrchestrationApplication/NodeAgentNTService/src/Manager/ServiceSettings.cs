@@ -14,7 +14,8 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         Daily = 2,
         Weekly = 3,
         Monthly = 4,
-        Hourly = 5        
+        Hourly = 5,
+        MonthlyByWeekAndDay = 6
     }
 
     /// <summary>
@@ -80,10 +81,11 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         /// The frequency for installing Windows Update.
         /// The format and Possible Values : 
         /// 1. Monthly,5,12:22:32
-        /// 2. Weekly,Tuesday,12:22:32
-        /// 3. Daily,12:22:32 
-        /// 4. Once,12-12-2017,12:22:32
-        /// 5. None
+        /// 2. MonthlyByWeekAndDay,2,Friday,21:00:00
+        /// 3. Weekly,Tuesday,12:22:32
+        /// 4. Daily,12:22:32 
+        /// 5. Once,12-12-2017,12:22:32
+        /// 6. None
         /// </summary>   
         public string WUFrequency { get; set; }
 
@@ -159,6 +161,26 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         this.Date = new DateTime(currentDateTime.Year, currentDateTime.Month, dayOfMonth, 0, 0, 0);
                         this.Date = this.Date.Date + TimeSpan.Parse(arr[2]);
                     }
+                    break;
+
+                case Frequency.MonthlyByWeekAndDay:
+                    if (arr.Count() != 4)
+                    {
+                        throw new ArgumentException("Illegal WUFrequency Parameter : " + WUFrequency);
+                    }
+
+                    var weekOfMonth = (int)Convert.ChangeType(arr[1], typeof(int));
+                    var dayOfWeek = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), arr[2]);
+
+                    var firstDayOfMonth = new DateTime(currentDateTime.Year, currentDateTime.Month, day: 1);
+                    var firstWeekOfMonth = firstDayOfMonth.AddDays((dayOfWeek + 7 - firstDayOfMonth.DayOfWeek) % 7);
+                    var daysToAdd = 7 * (weekOfMonth - 1);
+                    if ((firstWeekOfMonth.Day + daysToAdd) > MaxSupportedDayOfMonth)
+                    {
+                        throw new ArgumentException("Illegal WUFrequency Parameter : " + WUFrequency + ". The day of month should be between 1 to 28.");
+                    }
+                    this.Date = firstWeekOfMonth.AddDays(daysToAdd);
+                    this.Date = this.Date.Date + TimeSpan.Parse(arr[3]);
                     break;
 
                 case Frequency.Weekly:
