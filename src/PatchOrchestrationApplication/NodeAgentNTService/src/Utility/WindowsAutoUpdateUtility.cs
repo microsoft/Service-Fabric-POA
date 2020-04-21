@@ -15,12 +15,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Utility
     {
         static string AURegPath = @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU";
         private RegistryKey auKey;
-
+        private readonly ServiceEventSource _eventSource = ServiceEventSource.Current;
         public WindowsAutoUpdateUtility()
         {
             if(!IsWindowsServer2012R2OrLower())
             {
                 auKey = Registry.LocalMachine.OpenSubKey(AURegPath, true);
+                if (auKey == null)
+                {
+                    _eventSource.InfoMessage("AU Registry did not exist on Machine . Creating new Registry to avoid failures.");
+                    auKey = Registry.LocalMachine.CreateSubKey(AURegPath);
+                }
             }
 
         }
