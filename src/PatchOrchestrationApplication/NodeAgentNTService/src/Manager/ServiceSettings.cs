@@ -101,6 +101,10 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
         public DayOfWeek DayOfWeek { get; private set; }
 
+        public int WeekOfMonth { get; private set; }
+
+        public TimeSpan Time { get; private set; }
+
         public DateTime Date { get; private set; }
 
         public bool IsLastDayOfMonth { get; private set; }
@@ -169,18 +173,14 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         throw new ArgumentException("Illegal WUFrequency Parameter : " + WUFrequency);
                     }
 
-                    var weekOfMonth = (int)Convert.ChangeType(arr[1], typeof(int));
-                    var dayOfWeek = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), arr[2]);
+                    this.WeekOfMonth = (int)Convert.ChangeType(arr[1], typeof(int));
+                    this.DayOfWeek = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), arr[2]);
+                    this.Time = TimeSpan.Parse(arr[3]);
 
-                    var firstDayOfMonth = new DateTime(currentDateTime.Year, currentDateTime.Month, day: 1);
-                    var firstWeekOfMonth = firstDayOfMonth.AddDays((dayOfWeek + 7 - firstDayOfMonth.DayOfWeek) % 7);
-                    var daysToAdd = 7 * (weekOfMonth - 1);
-                    if ((firstWeekOfMonth.Day + daysToAdd) > MaxSupportedDayOfMonth)
+                    if (this.WeekOfMonth < 1 || this.WeekOfMonth > 4)
                     {
-                        throw new ArgumentException("Illegal WUFrequency Parameter : " + WUFrequency + ". The day of month should be between 1 to 28.");
+                        throw new ArgumentException("Illegal WUFrequency Parameter : " + WUFrequency + ". The WeekOfMonth should be between 1 to 4.");
                     }
-                    this.Date = firstWeekOfMonth.AddDays(daysToAdd);
-                    this.Date = this.Date.Date + TimeSpan.Parse(arr[3]);
                     break;
 
                 case Frequency.Weekly:

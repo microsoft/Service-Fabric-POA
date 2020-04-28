@@ -640,12 +640,13 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
 
                 case Frequency.MonthlyByWeekAndDay:
                     {
-                        var next = new DateTime(currentTime.Year, currentTime.Month, settingsDateTime.Day,
-                            settingsDateTime.Hour, settingsDateTime.Minute, settingsDateTime.Second);
+                        var next = this.GetNextDateTimeForMonthlyByWeekAndDayFrequency(currentTime, settings);
+                        
                         if (DateTime.Compare(next, currentTime) < 0)
                         {
-                            next = next.AddMonths(1);
+                            next = this.GetNextDateTimeForMonthlyByWeekAndDayFrequency(currentTime.AddMonths(1), settings);
                         }
+
                         return next;
                     }
 
@@ -693,6 +694,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 default:                    
                     return _checkpointFileDefaultDateTime;
             }
+        }
+
+        private DateTime GetNextDateTimeForMonthlyByWeekAndDayFrequency(DateTime currentTime, ServiceSettings settings)
+        {
+            var firstDayOfMonth = new DateTime(currentTime.Year, currentTime.Month, day: 1);
+            var firstWeekOfMonth = firstDayOfMonth.AddDays((settings.DayOfWeek + 7 - firstDayOfMonth.DayOfWeek) % 7);
+            var daysToAdd = 7 * (settings.WeekOfMonth - 1);
+            var dayOfMonth = firstWeekOfMonth.AddDays(daysToAdd);
+            var dayOfMonthWithTime = dayOfMonth + settings.Time;
+
+            return dayOfMonthWithTime;
         }
 
         class CheckpointFileData
