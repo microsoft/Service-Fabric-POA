@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appPackageUrl": {
+            "value": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.4.5/PatchOrchestrationApplication_v1.4.5.sfpkg"
+        },
+        "applicationTypeVersion": {
+            "value": "1.4.5"
+        },
+        "clusterName": {
+            "value": "{{cluster name}}"
+        },
+        "minWaitTimeBetweenNodes": {
+            "value": 0
+        },
+        "taskApprovalPolicy": {
+            "value": "NodeWise"
+        },
+        "wuFrequency": {
+            "value": "Weekly,Wednesday,7:00:00"
+        },
+        "wuOperationTimeoutInMinutes": {
+            "value": 90
+        }
+    }
+}
