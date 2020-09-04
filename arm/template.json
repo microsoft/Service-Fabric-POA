@@ -36,7 +36,7 @@
                 "description": "task approval policy."
             },
             "type": "String",
-            "allowedValues" : [
+            "allowedValues": [
                 "NodeWise",
                 "UpgradeDomainWise"
             ]
