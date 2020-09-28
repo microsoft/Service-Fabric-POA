@@ -25,7 +25,7 @@
       1. Assembly info
       2. File info
       3. Not yet in Telemetry of windows -->
-    <VersionPrefix>1.4.5</VersionPrefix>
+    <VersionPrefix>1.4.6</VersionPrefix>
     <Company>Microsoft</Company>
     <!--GenerateAssemblyInfo>false</GenerateAssemblyInfo-->
   </PropertyGroup>
