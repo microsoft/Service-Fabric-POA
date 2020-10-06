@@ -11,7 +11,7 @@ Param
     $ImageStoreConnectionString = "fabric:ImageStore",
 
     [string]
-    $ApplicationVersion = "1.4.6",
+    $ApplicationVersion = "1.4.7",
 	
     [hashtable]
     $ApplicationParameters = @{},
