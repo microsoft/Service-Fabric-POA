@@ -50,6 +50,7 @@
     </ItemGroup>
     <Copy SourceFiles="@(PackageContents)" DestinationFolder="$(OUTPUTROOT)\$(Configuration)\PatchOrchestrationApplication\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="Scripts\Deploy.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />
+    <Copy SourceFiles="Scripts\Deploy-FabricApplication.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />
     <Copy SourceFiles="Scripts\Undeploy.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />
     <Copy SourceFiles="Scripts\Upgrade.ps1" DestinationFolder="$(OUTPUTROOT)\$(Configuration)" />        
   </Target>
