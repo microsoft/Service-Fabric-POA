@@ -180,5 +180,42 @@ else {
     & $msbuildFullPath $msbuildArgs
 }
 
+# update arm app template files with current version
+$commonProps = '.\src\properties\common.props'
+$templateJson = '.\arm\template.json'
+$templateParametersJson = '.\arm\template.parameters.json'
+$buildVersion = $null
+
+if((test-path $commonProps)) {
+    write-host "reading $commonProps"
+    $xml = [xml]::new()
+    $xml.Load($commonProps)
+    $buildVersion = $xml.Project.PropertyGroup.VersionPrefix
+    $buildVersion = ([string]$buildVersion).trim()
+    write-host "build version $buildVersion"
+}
+
+if($buildVersion -and (test-path $templateJson) -and (test-path $templateParametersJson)) {
+    write-host "reading $templateJson"
+    $pattern = "(?:/|_)v(?<version>\d+?\.\d+?\.\d+?)(?:/|\.)"
+    $json = get-content -raw $templateJson | convertfrom-json
+
+    if($json.parameters.appPackageUrl.defaultValue -match $pattern -and $matches.version -ne $buildVersion) {
+        write-host "updating $templateJson with version $buildVersion"
+        $json.parameters.appPackageUrl.defaultValue = $json.parameters.appPackageUrl.defaultValue.replace($matches.version,$buildVersion)
+        $json.parameters.applicationTypeVersion.defaultValue = $buildVersion
+        $json | convertto-json -Depth 99 | out-file $templateJson
+    }
+
+    write-host "reading $templateParametersJson"
+    $json = get-content -raw $templateParametersJson | convertfrom-json
+
+    if($json.parameters.appPackageUrl.value -match $pattern -and $matches.version -ne $buildVersion) {
+        write-host "updating $templateParametersJson with version $buildVersion"
+        $json.parameters.appPackageUrl.value = $json.parameters.appPackageUrl.value.replace($matches.version,$buildVersion)
+        $json.parameters.applicationTypeVersion.value = $buildVersion
+        $json | convertto-json -Depth 99 | out-file $templateParametersJson
+    }
+}
 
 Set-location -Path $presentWorkingDirectory
