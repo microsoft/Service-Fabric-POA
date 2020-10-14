@@ -1,0 +1,192 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appPackageUrl": {
+            "defaultValue": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.4.5/PatchOrchestrationApplication_v1.4.5.sfpkg",
+            "metadata": {
+                "description": "The URL to the application package sfpkg file. example: https://github.com/microsoft/Service-Fabric-POA/releases/download/{{version}}/PatchOrchestrationApplication_{{version}}.sfpkg"
+            },
+            "type": "String"
+        },
+        "applicationTypeVersion": {
+            "defaultValue": "1.4.5",
+            "metadata": {
+                "description": "The application type version."
+            },
+            "type": "String"
+        },
+        "clusterName": {
+            "defaultValue": "Cluster",
+            "metadata": {
+                "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only."
+            },
+            "type": "String"
+        },
+        "minWaitTimeBetweenNodes": {
+            "defaultValue": 0,
+            "metadata": {
+                "description": "wait interval between nodes."
+            },
+            "type": "int"
+        },
+        "taskApprovalPolicy": {
+            "defaultValue": "NodeWise",
+            "metadata": {
+                "description": "task approval policy."
+            },
+            "type": "String",
+            "allowedValues": [
+                "NodeWise",
+                "UpgradeDomainWise"
+            ]
+        },
+        "wuFrequency": {
+            "defaultValue": "Weekly,Wednesday,7:00:00",
+            "metadata": {
+                "description": "windows update frequency. refer to applicationmanifest.xml for allowed values."
+            },
+            "type": "String"
+        },
+        "wuOperationTimeoutInMinutes": {
+            "defaultValue": 90,
+            "metadata": {
+                "description": "windows update operation timeout in minutes."
+            },
+            "type": "int"
+        }
+    },
+    "variables": {
+        "applicationName": "PatchOrchestrationApplication",
+        "applicationTypeName": "PatchOrchestrationApplicationType",
+        "serviceName1": "PatchOrchestrationApplication~NodeAgentService",
+        "serviceTypeName1": "PatchOrchestrationApplication~NodeAgentServiceType",
+        "serviceName2": "PatchOrchestrationApplication~CoordinatorService",
+        "serviceTypeName2": "PatchOrchestrationApplication~CoordinatorServiceType"
+    },
+    "resources": [
+        {
+            "apiVersion": "2020-03-01",
+            "dependsOn": [],
+            "location": "[resourcegroup().location]",
+            "name": "[concat(parameters('clusterName'), '/', variables('applicationTypeName'))]",
+            "properties": {
+                "provisioningState": "Default"
+            },
+            "type": "Microsoft.ServiceFabric/clusters/applicationTypes"
+        },
+        {
+            "apiVersion": "2020-03-01",
+            "dependsOn": [
+                "[concat('Microsoft.ServiceFabric/clusters/', parameters('clusterName'), '/applicationTypes/', variables('applicationTypeName'))]"
+            ],
+            "location": "[resourcegroup().location]",
+            "name": "[concat(parameters('clusterName'), '/', variables('applicationTypeName'), '/', parameters('applicationTypeVersion'))]",
+            "properties": {
+                "appPackageUrl": "[parameters('appPackageUrl')]",
+                "provisioningState": "Default"
+            },
+            "type": "Microsoft.ServiceFabric/clusters/applicationTypes/versions"
+        },
+        {
+            "apiVersion": "2020-03-01",
+            "dependsOn": [
+                "[concat('Microsoft.ServiceFabric/clusters/', parameters('clusterName'), '/applicationTypes/', variables('applicationTypeName'), '/versions/', parameters('applicationTypeVersion'))]"
+            ],
+            "location": "[resourcegroup().location]",
+            "name": "[concat(parameters('clusterName'), '/', variables('applicationName'))]",
+            "properties": {
+                "parameters": {
+                    "AcceptWindowsUpdateEula": "true",
+                    "CoordinatorService_MinReplicaSetSize": "3",
+                    "CoordinatorService_PlacementConstraints": "",
+                    "CoordinatorService_TargetReplicaSetSize": "3",
+                    "InstallWindowsOSOnlyUpdates": "False",
+                    "LogsDiskQuotaInMB": "1024",
+                    "MaxResultsToCache": "3000",
+                    "MinWaitTimeBetweenNodes": "[parameters('minWaitTimeBetweenNodes')]",
+                    "NodeAgentService_InstanceCount": "-1",
+                    "NodeAgentService_PlacementConstraints": "",
+                    "TaskApprovalPolicy": "[parameters('taskApprovalPolicy')]",
+                    "WUFrequency": "[parameters('wuFrequency')]",
+                    "WUOperationTimeOutInMinutes": "[parameters('wUOperationTimeOutInMinutes')]",
+                    "WUQuery": "IsInstalled=0",
+                    "WURescheduleCount": "5",
+                    "WURescheduleTimeInMinutes": "30"
+                },
+                "provisioningState": "Default",
+                "typeName": "[variables('applicationTypeName')]",
+                "typeVersion": "[parameters('applicationTypeVersion')]",
+                "upgradePolicy": {
+                    "applicationHealthPolicy": {
+                        "considerWarningAsError": false,
+                        "defaultServiceTypeHealthPolicy": {
+                            "maxPercentUnhealthyPartitionsPerService": 20,
+                            "maxPercentUnhealthyReplicasPerPartition": 20,
+                            "maxPercentUnhealthyServices": 20
+                        },
+                        "maxPercentUnhealthyDeployedApplications": 20
+                    },
+                    "forceRestart": false,
+                    "rollingUpgradeMonitoringPolicy": {
+                        "healthCheckRetryTimeout": "00:10:00.0",
+                        "healthCheckStableDuration": "00:00:00.0",
+                        "healthCheckWaitDuration": "00:02:00.0",
+                        "upgradeDomainTimeout": "00:20:00.0",
+                        "upgradeTimeout": "01:00:00.0"
+                    },
+                    "upgradeReplicaSetCheckTimeout": "00:01:00.0"
+                }
+            },
+            "type": "Microsoft.ServiceFabric/clusters/applications"
+        },
+        {
+            "apiVersion": "2020-03-01",
+            "type": "Microsoft.ServiceFabric/clusters/applications/services",
+            "name": "[concat(parameters('clusterName'), '/', variables('applicationName'), '/', variables('serviceName1'))]",
+            "location": "[resourcegroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.ServiceFabric/clusters/', parameters('clusterName'), '/applications/', variables('applicationName'))]"
+            ],
+            "properties": {
+                "provisioningState": "Default",
+                "serviceKind": "Stateless",
+                "serviceTypeName": "[variables('serviceTypeName1')]",
+                "instanceCount": -1,
+                "partitionDescription": {
+                    "partitionScheme": "Singleton"
+                },
+                "correlationScheme": [],
+                "serviceLoadMetrics": [],
+                "servicePlacementPolicies": []
+            }
+        },
+        {
+            "apiVersion": "2020-03-01",
+            "type": "Microsoft.ServiceFabric/clusters/applications/services",
+            "name": "[concat(parameters('clusterName'), '/', variables('applicationName'), '/', variables('serviceName2'))]",
+            "location": "[resourcegroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.ServiceFabric/clusters/', parameters('clusterName'), '/applications/', variables('applicationName'))]"
+            ],
+            "properties": {
+                "provisioningState": "Default",
+                "serviceKind": "Stateful",
+                "serviceTypeName": "[variables('serviceTypeName2')]",
+                "targetReplicaSetSize": 3,
+                "minReplicaSetSize": 2,
+                "replicaRestartWaitDuration": "00:01:00.0",
+                "quorumLossWaitDuration": "00:02:00.0",
+                "standByReplicaKeepDuration": "00:00:30.0",
+                "partitionDescription": {
+                    "partitionScheme": "Singleton"
+                },
+                "hasPersistedState": true,
+                "correlationScheme": [],
+                "serviceLoadMetrics": [],
+                "servicePlacementPolicies": [],
+                "defaultMoveCost": "Low"
+            }
+        }
+    ]
+}
