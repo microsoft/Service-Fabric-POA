@@ -27,7 +27,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.TelemetryLib
         // Every time a new version of application would be release, manually update this version.
         // This application version is used for telemetry
         // For consistency keep this applicaiton version same as application version from application manifest.
-        private const string ApplicationVersion = "1.4.5";
+        private const string ApplicationVersion = "1.4.7";
 
         public TelemetryEvents(FabricClient fabricClient, ITelemetryEventSource eventSource)
         {
