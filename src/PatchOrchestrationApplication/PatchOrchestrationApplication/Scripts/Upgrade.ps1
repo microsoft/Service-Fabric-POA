@@ -11,7 +11,11 @@ Param
     $ImageStoreConnectionString = "fabric:ImageStore",
 
     [string]
+<<<<<<< HEAD
     $ApplicationVersion = "1.4.8",
+=======
+    $ApplicationVersion = "1.4.7",
+>>>>>>> healthreportfix
 	
     [hashtable]
     $ApplicationParameters = @{},

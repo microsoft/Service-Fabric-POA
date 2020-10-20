@@ -352,7 +352,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                     {
                         // Post the health event saying that there is no repair task and things are working fine.
                         string description = "No claimed tasks and no processing tasks are found.";
-                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok, -1);
+                        HealthManagerHelper.PostNodeHealthReport(this.fabricClient, this.context.ServiceName, ClusterPatchingStatusProperty, description, HealthState.Ok, 2);
                     }
                 }
             }
