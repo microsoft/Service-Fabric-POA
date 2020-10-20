@@ -101,7 +101,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             }
             healthDescription += "\nFor detailed installation results, refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results";
 
-            long timeToLive = (long)((fileData.schedulingDateTime - fileData.lastAttemptedUpdateTime) + TimeSpan.FromDays(1)).Minutes;
+            long timeToLive = (long)((fileData.schedulingDateTime - fileData.lastAttemptedUpdateTime) + TimeSpan.FromDays(1)).TotalMinutes;
             
             this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, timeToLive, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
@@ -121,7 +121,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                 initialTime = fileData.lastAttemptedUpdateTime;
             }
 
-            long timeToLive = (long)((fileData.schedulingDateTime - initialTime) + TimeSpan.FromDays(1)).Minutes;
+            long timeToLive = (long)((fileData.schedulingDateTime - initialTime) + TimeSpan.FromDays(1)).TotalMinutes;
 
             if (!this._serviceSettings.DisableWindowsUpdates)
             {
