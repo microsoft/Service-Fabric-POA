@@ -673,29 +673,25 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
                         case NodeAgentSfUtilityExitCodes.RestartCompleted:
                         case NodeAgentSfUtilityExitCodes.InstallationCompleted:
                             {
-                                string healthproperty = string.Format(
-                                    NodeTimeoutStatusFormat,
-                                    nodeName);
-                                string healthDescription =
+                                string message =
                                     string.Format(
-                                        "Installation timeout {0} minutes alloted to repair task {1}, node {2} is over, however since node is in post-installation phase, wait for few more minutes for operation to complete"
-                                        + "In case problem persists, please check if recent installations of updates has caused any problem on the node",
-                                        executorData.ExecutorTimeoutInMinutes,
+                                        "Repair Task {0} did not complete within the Timeout period for node {1}.  Since Installation was already started, updating Repair Task state to further proceed with Node enabling",
                                         task.TaskId,
                                         nodeName);
-                                ServiceEventSource.Current.ErrorMessage("Title = {0}, Description = {1}", healthproperty, healthDescription);
-                                HealthManagerHelper.PostNodeHealthReport(this.fabricClient,
-                                    this.context.ServiceName,
-                                    healthproperty,
-                                    healthDescription,
-                                    HealthState.Warning,
-                                    60);
-
+                                ServiceEventSource.Current.InfoMessage(message);
+                                await UpdateRepairTaskState(task, nodeName, RepairTaskState.Restoring, executorData.ExecutorTimeoutInMinutes, cancellationToken);
                                 break;
                             }
 
                         default:
                             {
+
+                                string message =
+                                    string.Format(
+                                        "Repair Task {0} completed within the Timeout period for node {1}. Updating Repair Task state to further proceed with Node enabling",
+                                        task.TaskId,
+                                        nodeName);
+                                ServiceEventSource.Current.InfoMessage(message);
                                 await UpdateRepairTaskState(task, nodeName, RepairTaskState.Restoring, executorData.ExecutorTimeoutInMinutes, cancellationToken);
                                 break;
                             }
