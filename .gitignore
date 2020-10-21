@@ -366,8 +366,9 @@ paket-files/
 __pycache__/
 *.pyc
 
-# Everything outside the src directory
+# Everything outside the src and arm directories
 /*
 /*/
+!/arm/
 !/src/
 /src/.packages
