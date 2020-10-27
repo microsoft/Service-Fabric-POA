@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "appPackageUrl": {
-            "value": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.4.5/PatchOrchestrationApplication_v1.4.5.sfpkg"
+            "value": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.4.8/PatchOrchestrationApplication_v1.4.8.sfpkg"
         },
         "applicationTypeVersion": {
-            "value": "1.4.5"
+            "value": "1.4.8"
         },
         "clusterName": {
             "value": "{{cluster name}}"

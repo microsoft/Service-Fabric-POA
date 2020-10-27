@@ -91,16 +91,21 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             CheckpointFileData fileData = this.ReadCheckpointFile();
             string formatString = "Last patching attempt happened at : {0}, Next patching cycle is scheduled at : {1}";
             string healthDescription = "";
+            DateTime initialTime = DateTime.Now;
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
             }
             else
             {
+                initialTime = fileData.lastAttemptedUpdateTime;
                 healthDescription = string.Format(formatString, fileData.lastAttemptedUpdateTime.ToString(), fileData.schedulingDateTime.ToString());
             }
             healthDescription += "\nFor detailed installation results, refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results";
-            this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+
+            long timeToLive = (long)((fileData.schedulingDateTime - initialTime) + TimeSpan.FromDays(1)).TotalMinutes;
+            
+            this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, timeToLive, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
         }
 
@@ -109,7 +114,17 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
         /// </summary>
         private void DisableWindowsUpdate()
         {
-            
+            CheckpointFileData fileData = this.ReadCheckpointFile();
+
+             DateTime initialTime = DateTime.Now;
+
+            if (!fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
+            {
+                initialTime = fileData.lastAttemptedUpdateTime;
+            }
+
+            long timeToLive = (long)((fileData.schedulingDateTime - initialTime) + TimeSpan.FromDays(1)).TotalMinutes;
+
             if (!this._serviceSettings.DisableWindowsUpdates)
             {
                 _eventSource.InfoMessage("Not disabling automatic windows updates.");
@@ -139,7 +154,7 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
                         _eventSource.InfoMessage("New AU registry values are {0}", auUtility.LogCurrentAUValues());
                     }
                     string updateMsg = "Windows Update policy has been configured to Notify before Download";
-                    this._nodeAgentSfUtility.ReportHealth(WUOperationSetting, updateMsg, HealthState.Ok, -1, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
+                    this._nodeAgentSfUtility.ReportHealth(WUOperationSetting, updateMsg, HealthState.Ok, timeToLive, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
                     return;
                 }
                 catch (Exception e)
