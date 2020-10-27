@@ -91,17 +91,19 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.NodeAgentNTService.Manager
             CheckpointFileData fileData = this.ReadCheckpointFile();
             string formatString = "Last patching attempt happened at : {0}, Next patching cycle is scheduled at : {1}";
             string healthDescription = "";
+            DateTime initialTime = DateTime.Now;
             if (fileData.lastAttemptedUpdateTime.Equals(_checkpointFileDefaultDateTime))
             {
                 healthDescription = string.Format(formatString, "N/A", fileData.schedulingDateTime.ToString());
             }
             else
             {
+                initialTime = fileData.lastAttemptedUpdateTime;
                 healthDescription = string.Format(formatString, fileData.lastAttemptedUpdateTime.ToString(), fileData.schedulingDateTime.ToString());
             }
             healthDescription += "\nFor detailed installation results, refer to https://docs.microsoft.com/azure/service-fabric/service-fabric-patch-orchestration-application#view-the-windows-update-results";
 
-            long timeToLive = (long)((fileData.schedulingDateTime - fileData.lastAttemptedUpdateTime) + TimeSpan.FromDays(1)).TotalMinutes;
+            long timeToLive = (long)((fileData.schedulingDateTime - initialTime) + TimeSpan.FromDays(1)).TotalMinutes;
             
             this._nodeAgentSfUtility.ReportHealth(WUOperationStatus, healthDescription, HealthState.Ok, timeToLive, TimeSpan.FromMinutes(this._serviceSettings.OperationTimeOutInMinutes));
 
