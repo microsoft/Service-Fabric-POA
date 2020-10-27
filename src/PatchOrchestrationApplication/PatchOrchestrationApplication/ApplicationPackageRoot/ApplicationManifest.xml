@@ -37,10 +37,12 @@
     <!--This configuration decides the interval at which service would reschedule the Windows Update in case failure persists -->
     <Parameter Name="WURescheduleTimeInMinutes" DefaultValue="30" />
     <!--The frequency for installing Windows Update. The format and Possible Values are as below
-        1. Monthly,DD,HH:MM:SS -> Eg: Monthly,5,12:22:32 (day of month should be between 1-28)
-        2. Weekly,DAY,HH:MM:SS -> Weekly,Tuesday,12:22:32
-        3. Daily,HH:MM:SS -> Daily,12:22:32
-        5. None -> Indicates that Windows Update shouldn't be done
+        1. Monthly,DD,HH:mm:ss -> Monthly,5,12:22:32 (day of month should be between 1-28)
+        2. MonthlyByWeekAndDay,DD,HH:mm:ss -> MonthlyByWeekAndDay,5,12:22:32 (day of month should be between 1-28)
+        3. Weekly,DAY,HH:mm:ss -> Weekly,Tuesday,12:22:32
+        4. Daily,HH:mm:ss -> Daily,12:22:32
+        5. Once,MM-dd-yyyy,HH:mm:ss -> Once,12-12-2017,12:22:32
+        6. None -> Indicates that Windows Update shouldn't be done
         NOTE : All the time are in UTC
         Default is every wednesday @ 7am to cover patch tuesdays.
     -->
