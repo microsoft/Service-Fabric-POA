@@ -28,6 +28,7 @@
     <Compile Include="NodeAgentService.cs" />
     <Compile Include="NtServiceConfigurationUtility.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceEventSource.cs" />
     <Compile Include="DirectoryUtility.cs" />
   </ItemGroup>

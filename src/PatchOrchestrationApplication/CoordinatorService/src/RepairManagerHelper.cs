@@ -124,11 +124,19 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
         /// <returns>List of repair tasks in claimed state</returns>
         private async Task<IList<RepairTask>> GetClaimedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
         {
+            IList<RepairTask> repairTasks = new List<RepairTask>();
 
-            IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
-                RepairTaskStateFilter.Claimed,
-                ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
-
+            try
+            {
+                repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
+               RepairTaskStateFilter.Claimed,
+               ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
+            }
+            catch ( Exception ex)
+            {
+                ServiceEventSource.Current.VerboseMessage("Exception occured in fetching Repair Tasks from Fabric in GetClaimedRepairTasks.  Exception- {0}", ex);
+            }
+               
             int claimedRepairTaskCount = repairTasks.Count;
 
             IList<RepairTask> selectedRepairTasks = new List<RepairTask>();
@@ -180,9 +188,18 @@ namespace Microsoft.ServiceFabric.PatchOrchestration.CoordinatorService
 
         private async Task<IList<RepairTask>> GetCompletedRepairTasks(NodeList nodeList, CancellationToken cancellationToken)
         {
-            IList<RepairTask> repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
+            IList<RepairTask> repairTasks = new List<RepairTask>();
+
+            try
+            {
+                repairTasks = await this.fabricClient.RepairManager.GetRepairTaskListAsync(TaskIdPrefix,
                 RepairTaskStateFilter.Completed,
                 ExecutorName, this.DefaultTimeoutForOperation, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.VerboseMessage("Exception occured in fetching Repair Tasks from Fabric in GetCompletedRepairTasks.  Exception- {0}", ex);
+            }
 
             return repairTasks;
         }
