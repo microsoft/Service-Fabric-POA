@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TelemetryLib")]
+[assembly: AssemblyTitle("Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TelemetryLib")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2021")]
+[assembly: AssemblyCompany("Microsoft Inc.")]
+[assembly: AssemblyProduct("Microsoft.ServiceFabric.PatchOrchestration.NodeAgentService")]
+[assembly: AssemblyCopyright("Copyright © Microsoft Inc. 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -23,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7bc6991f-c840-413e-b1cd-4025947cf5fa")]
+[assembly: Guid("6d1f2fa9-23e5-4153-9558-de376d7a65cd")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,8 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.4.9")]
 [assembly: AssemblyFileVersion("1.4.9")]
