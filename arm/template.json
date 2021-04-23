@@ -3,14 +3,14 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "appPackageUrl": {
-            "defaultValue": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.4.9/PatchOrchestrationApplication_v1.4.9.sfpkg",
+            "defaultValue": "https://github.com/microsoft/Service-Fabric-POA/releases/download/v1.5.0/PatchOrchestrationApplication_v1.5.0.sfpkg",
             "metadata": {
                 "description": "The URL to the application package sfpkg file. example: https://github.com/microsoft/Service-Fabric-POA/releases/download/{{version}}/PatchOrchestrationApplication_{{version}}.sfpkg"
             },
             "type": "String"
         },
         "applicationTypeVersion": {
-            "defaultValue": "1.4.9",
+            "defaultValue": "1.5.0",
             "metadata": {
                 "description": "The application type version."
             },
