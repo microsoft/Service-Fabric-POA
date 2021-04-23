@@ -123,11 +123,11 @@ By default the script will create a `release` package of the application in `out
 
 Choose one of the following methods for deployment. Service Fabric best practice is to use arm templates for application deployments. Example template and argument files are located in [/arm](/arm) directory.  
 
-#### click button below to deploy using azure arm app template
+#### Click button below to deploy using azure arm app template
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FService-Fabric-POA%2Fmaster%2Farm%2Ftemplate.json)  
 
-#### using powershell  
+#### Using powershell  
 
 - Open PowerShell command prompt and go to the root of the repository.
 
